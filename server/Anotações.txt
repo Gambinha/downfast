@@ -1,0 +1,36 @@
+"simple-array"
+user.names = [
+    "Alexander",
+    "Alex",
+    "Sasha",
+    "Shurik"
+];
+
+"simple-json"
+Will be stored in a single database column as {"name":"John","nickname":"Malkovich"} value.
+When you'll load data from the database, you will have your object/array/primitive back via JSON.parse
+
+
+A ver:
+ - Async.each: https://www.youtube.com/watch?v=JjvyETsnyjI
+	       https://www.npmjs.com/package/async-each
+ - Promises.All: https://stackoverflow.com/questions/58122320/can-i-run-synchronously-ytdl-getinfo
+
+
+{
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "postgres",
+    "database": "yt_downloader",
+    "entities": [
+      "./src/models/*.ts"
+    ],
+    "migrations": [
+       "./src/database/migrations/*.ts"
+    ],
+    "cli": {
+      "migrationsDir": "./src/database/migrations"
+    }
+  }

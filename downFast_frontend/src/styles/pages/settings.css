@@ -1,0 +1,269 @@
+#home-landing {
+    width: 100%;
+    height: 100%;
+}
+
+.settings-container {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    z-index: 1;
+}
+
+.settings-container #title-container {
+    width: 90%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-top: 50px;
+}
+
+.settings-container #title-container h2 {
+    font-size: 1.6em;
+}
+
+/* Perfil Container */
+.settings-container #profile-container,
+.settings-container #edit-container {
+    width: 50%;
+    margin-top: 30px;
+    padding: 10px 20px;
+
+    border-radius: 10px;
+    border: 1px solid black;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+}
+
+.settings-container #profile-container .profile-item,
+.settings-container #edit-container .profile-item,
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item {
+    width: 90%;
+    margin-top: 30px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings-container #profile-container .profile-item > label,
+.settings-container #edit-container .profile-item > label,
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item > label {
+    flex: 3;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.settings-container #profile-container .profile-item > p,
+.settings-container #edit-container .profile-item > input {
+    flex: 7;
+    font-size: 18px;
+    border-bottom: 1px solid #aaa;
+    padding-left: 10px;
+}
+
+.settings-container #edit-container .profile-item > input {
+    border: none;
+    border-bottom: 1px solid red;
+
+    background-color: #f5f5f5;
+}
+
+.settings-container #edit-container .profile-item > input:focus {
+    outline: 0;
+    border: 0;
+    border-bottom: 1px solid red;
+}
+
+.settings-container #profile-container #profile-buttons,
+.settings-container #edit-container #profile-edit-buttons  {
+    width: 100%;
+    margin-top: 200px;
+
+    display: flex;
+    flex-direction: row;
+
+    justify-content: space-around;
+    align-items: center;
+}
+
+.settings-container #profile-container #profile-buttons > button{
+    width: 30%;
+    color: white;
+
+    height: 40px;
+    border-radius: 6px;
+}
+
+.settings-container #edit-container #profile-edit-buttons > button {
+    width: 45%;
+    color: white;
+
+    height: 40px;
+    border-radius: 6px;
+}
+
+/* Password Edit Window */
+#edit-password-popup{
+    width: 100vw;
+    height: 100vh;
+
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+}
+
+#edit-password-popup #overlay {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(49, 49, 49, 0.8);
+
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+}
+
+#edit-password-popup #edit-password-container {
+    width: 700px;
+    height: 400px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1.4;
+    background-color: #f1f1f1;
+    padding: 20px 30px;
+    border-radius: 14px;
+    border: 1px solid black;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* max-width: 1000px;
+    min-width: 300px; */
+}
+
+#edit-password-popup #edit-password-container #edit-password-form {
+    width: 100%;
+    margin-top: 20px;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form #warning-change-password {
+    width: 320px;
+    position: absolute;
+    font-size: 12px;
+    color: red;
+
+    right: 38px;
+    bottom: -20px;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item {
+    position: relative;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item > label {
+    font-size: 20px;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item > input {
+    padding-left: 10px;
+    flex: 4;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+
+    background-color: #f5f5f5;
+
+    font-size: 18px;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item > input:focus {
+    outline: 0;
+}
+
+#edit-password-popup #edit-password-container #edit-password-form .edit-password-item > span {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+
+    cursor: pointer;
+}
+
+#edit-password-popup #edit-password-container #edit-password-buttons-container {
+    width: 100%;
+    height: 40px;
+    margin-top: 80px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#edit-password-popup #edit-password-container #edit-password-buttons-container > button {
+    width: 40%;
+    height: 100%;
+
+    border-radius: 6px;
+
+    border: 1px solid black;
+
+    color: white;
+    font-size: 1.6rem;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+
+@media (max-width: 1450px) {
+    /* .settings-container {
+        background-color: red;
+    } */
+
+    .settings-container #profile-container,
+    .settings-container #edit-container {
+        width: 46%;
+    }
+    
+    .settings-container #profile-container .profile-item > label,
+    .settings-container #edit-container .profile-item > label,
+    #edit-password-popup #edit-password-container #edit-password-form .edit-password-item > label {
+        font-size: 18px;
+    }
+
+    .settings-container #profile-container .profile-item > p,
+    .settings-container #edit-container .profile-item > input {
+        font-size: 14px;
+    }
+
+    .settings-container #profile-container #profile-buttons,
+    .settings-container #edit-container #profile-edit-buttons  {
+        margin-top: 120px;
+    }
+
+    .settings-container #profile-container #profile-buttons > button,
+    .settings-container #edit-container #profile-edit-buttons > button{
+        font-size: 13px;
+    }
+}
+

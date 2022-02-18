@@ -1,0 +1,709 @@
+body.active-popup {
+    overflow-y: hidden;
+}
+
+#library-landing {
+    width: 100%;
+    height: 100%;
+}
+
+.library-container {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    z-index: 1;
+}
+
+/* SEARCH BAR */
+
+.library-container #search-bar {
+    width: 80%;
+    margin-top: 50px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.library-container #search-bar h2 {
+    font-size: 1.6em;
+}
+
+.library-container #search-bar #search-bar-inputs {
+    width: 76%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+
+    margin-top: 30px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 2px solid #aaa;
+}
+
+.library-container #search-bar #search-bar-inputs > input {
+    /* width: 500px; */
+    flex: 4;
+    height: 40px;
+    font-size: 1.4rem;
+    margin: 0 2px;
+
+    padding: 0 10px;
+    border: 1px solid #aaa;
+    border-radius: 10px;
+}
+
+.library-container #search-bar #search-bar-inputs input:focus,
+.library-container #search-bar #search-bar-inputs select:focus {
+    box-shadow: 0 0 0 0;
+    outline: 0;
+}
+
+.library-container #search-bar #search-bar-inputs .playlist-select {
+    /* width: 250px; */
+    flex: 1;
+    height: 40px;
+    font-size: 1.4rem;
+
+    padding: 0 40px;
+    border-radius: 10px;
+    margin: 0 2px;
+}
+
+.library-container #search-bar #create-playlist {
+    width: 50px;
+    height: 40px;
+    background-color: var(--color-secondary);
+    transition: background 1s;
+
+    border-radius: 50%;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    margin-left: 2px;
+
+    border-radius: 10px;
+
+    font-size: 3rem;
+}
+
+.library-container #search-bar #create-playlist:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+/* PLAYLIST CONTAINER */
+.library-container #playlists-container {
+    margin-top: 10px;
+    padding-bottom: 30px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 340px;
+    justify-content: space-around;
+}
+
+.library-container #playlists-container .playlist {
+    border: 1px solid black;
+    border-radius: 10px;
+    height: 320px;
+
+    max-width: 300px;
+    min-width: 300px;
+
+    margin: 0 15px;
+    margin-top: 30px;
+    padding: 10px 0 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.library-container #playlists-container .playlist .playlist-title {
+    width: 90%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.library-container #playlists-container .playlist h2 {
+    font-size: 2rem;
+
+    display: block;
+
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+
+.library-container #playlists-container .playlist .videos-list {
+    width: 100%;
+    margin-top: 10px;
+    height: 120px;
+
+    position: relative;
+}
+
+.library-container #playlists-container .playlist .videos-list #videos-lenght {
+    position: absolute;
+    text-align: center;
+
+    left: 50%;
+    transform: translate(-50%, 0);
+    margin-left: 0;
+
+    font-size: 1.2rem;
+    padding: 4px;
+
+    background-color: #f1f1f1;
+}
+
+.library-container #playlists-container .playlist .gender {
+    width: 80%;
+    margin-top: 40px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.library-container #playlists-container .playlist .gender h3 {
+    width: 200px;
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+
+.library-container #playlists-container .playlist .gender h3::first-letter {
+    text-transform: capitalize;
+}
+
+.library-container #playlists-container .playlist button,
+#library-landing #popup #particular-keywords-box #submit-keywords {
+    width: 100%;
+    height: 50px;
+    margin-top: 30px;
+    
+    border-radius: 0 0 0.8rem 0.8rem;
+
+    font: 700 2rem Archivo;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+
+    transition: background 0.2s;
+
+    color: var(--color-button-text);
+    background-color: var(--color-secondary);
+
+    cursor: pointer;
+
+    border: none;
+    border-top: 1px solid black;
+}
+
+.library-container #playlists-container .playlist button:hover,
+#library-landing #popup #particular-keywords-box #submit-keywords:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.library-container #playlists-container .playlist .videos-list .box-line,
+#library-landing #popup #particular-videos-container .particular-box-line {
+    width: 100%;
+    height: 30px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: .8em .4em;
+    border-top: 1px solid var(--color-primary-darker);
+    border-bottom: 1px solid var(--color-primary-darker);
+}
+
+#library-landing #popup #particular-videos-container .particular-box-line  {
+    border-top: 0;
+}
+
+.library-container #playlists-container .playlist .videos-list .box-line p,
+#library-landing #popup #particular-videos-container .particular-box-line p {
+    display: block;
+    width: 250px;
+
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+
+    margin-left: .6em;
+    font-size: .9em;
+}
+
+#library-landing #popup,
+#library-landing #popup #overlay{
+    width: 100vw;
+    height: 100vh;
+
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+}
+
+#library-landing #popup #overlay {
+    background-color: rgba(49, 49, 49, 0.8);
+}
+
+#library-landing #popup #close-popup {
+    position: absolute;
+    top: 19px;
+    right: 16px;
+
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid red;
+}
+
+#library-landing #popup #particular-playlist {
+    width: 600px;
+    height: 700px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f1f1f1;
+    padding: 14px 20px;
+    border-radius: 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* max-width: 1000px;
+    min-width: 300px; */
+}
+
+#library-landing #popup #particular-playlist > input {
+    background-color: #f1f1f1;
+    width: 420px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-text-base);
+    border: 0;
+}
+
+#library-landing #popup #particular-playlist > input:focus {
+    border: 0;
+    outline: 0;
+    text-decoration: none;
+}
+
+#library-landing #popup #particular-videos-container {
+    width: 100%;
+    height: 360px;
+    margin-top: 16px;
+
+    border: 1px solid black;
+    border-radius: 15px 15px 0 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box {
+    width: 100%;
+    flex: 14;
+    background-color: #f5f5f5;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow-y: auto;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-start {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    width:88%;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-start input {
+    border: 0;
+    outline: 0;
+    background-color: #f7f7f7;
+    
+    display: block;
+    width: 100%;
+
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+
+    margin-left: 1em;
+    font-size: .9em;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-end {
+    width: 20px;
+    height: 20px;
+    
+    align-items: center;
+    justify-content: right;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-end button {
+    border: none;
+    background-color: #f5f5f5;
+    font-size: 1.6rem;
+    height: 20px;
+
+    cursor: pointer;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-list-title {
+    width: 100%;
+    padding: 4px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 15px 15px 0 0;
+    background-color: var(--color-primary-darker);
+    font-size: 0.8em;
+    color: var(--color-title-in-primary);
+}
+
+/* Div gender-security container */
+
+#library-landing #popup #particular-gender-security-box {
+    width: 100%;
+    height: 50px;
+    margin-top: 14px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-gender-box,
+#library-landing #popup #particular-gender-security-box #particular-security-box {
+    flex: 1;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-gender-box {
+    padding-right: 20px;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-security-box {
+    padding-left: 20px;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-security-box #security-choice {
+    width: 40%;
+    height: 30px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 10px;
+} 
+
+#library-landing #popup #particular-gender-security-box #particular-security-box #security-choice button {
+    flex: 1;
+    height: 100%;
+    background-color: #f1f1f1;
+
+    border: 1px solid #aaa;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 10px;    
+}
+
+#library-landing #popup #particular-gender-security-box #particular-security-box #security-choice #private-choice {
+    border-radius: 6px 0 0 6px;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-security-box #security-choice #public-choice {
+    border-radius: 0 6px 6px 0;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-gender-box #gender-input {
+    width: 56%;
+    height: 24px;
+    font-size: 1.4rem;
+
+    border: 1px solid #aaa;
+    padding: 0 6px;
+    border-radius: 10px;
+}
+
+#library-landing #popup #particular-gender-security-box #particular-gender-box #gender-input:focus {
+    outline: 0;
+}
+
+#library-landing #popup #particular-gender-security-box > div > span {
+    font-size: 1.8rem;
+    color: var(--color-text-base);
+    margin-left: 0;
+}
+
+/* Div keyword box */
+
+#library-landing #popup #particular-keywords-box {
+    width: 100%;
+    margin-top: 15px;
+    height: 110px;
+
+    padding: 4px 0;
+}
+
+#library-landing #popup #particular-keywords-box #particular-keywords-title {
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#library-landing #popup #particular-keywords-box form {
+    width: 60%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#library-landing #popup #particular-keywords-box #input-keywords {
+    width: 80%;
+    height: 30px;
+    font-size: 1.4rem;
+
+    padding: 0 10px;
+    border: 1px solid #aaa;
+    border-radius: 10px 0 0 10px;
+}
+
+#library-landing #popup #particular-keywords-box #input-keywords:focus {
+    box-shadow: 0 0 0 0;
+    outline: 0;
+}
+
+#library-landing #popup #particular-keywords-box #submit-keywords {
+    width: 20%;
+    height: 30px;
+    font-size: 1.4rem;
+    margin-top: 0;
+    border: 1px solid #aaa;
+    border-left: 0;
+    color: white;
+
+    border-radius: 0 10px 10px 0;
+}
+
+#library-landing #popup #particular-keywords-container {
+    width: 100%;
+    height: 66px;
+    padding: 1px 2px;
+    margin-top: 10px;
+    font-size: 1.2rem;
+
+    border-radius: 10px;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    overflow-y: auto;
+
+    border: 1px solid #aaa;
+}
+
+#library-landing #popup #particular-keywords-container span {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    margin-left: 10px;
+}
+
+#library-landing #popup #particular-keywords-container span > #remove-keyword {
+    width: 9px;
+    height: 9px;
+    margin-bottom: 10px;
+    margin-left: 2px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    font-size: .8rem;
+    color: white;
+
+    background-color: red;
+    border-radius: 50%;
+}
+
+#library-landing #popup #particular-buttons-container {
+    width: 100%;
+    height: 44px;
+    /* margin-top: 30px; */
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+
+    position: relative;
+    bottom: -34px;
+}
+
+#library-landing #popup #particular-buttons-container > button {
+    height: 100%;
+    margin: 0 4px;
+
+    color: var(--color-button-text);
+    font-size: 1.8rem;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#library-landing #popup #particular-buttons-container #download-playlist {
+    flex: 2;
+
+    background-color: var(--color-secondary);
+
+    border-radius: 0 0 0 10px;
+}
+
+#library-landing #popup #particular-buttons-container #download-playlist:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+#library-landing #popup #particular-buttons-container #edit-playlist {
+    flex: 1;
+
+    background-color: #6e7571;
+    font-size: 1.6rem;
+    line-height: 18px;
+
+}
+
+#library-landing #popup #particular-buttons-container #edit-playlist:hover {
+    background-color: #737a76;
+}
+
+#library-landing #popup #particular-buttons-container #remove-playlist {
+    flex: 1;
+
+    font-size: 1.6rem;
+    background-color: #f04a3e;
+
+    border-radius: 0 0 10px 0;
+}
+
+#library-landing #popup #particular-buttons-container #remove-playlist:hover {
+    background-color: #c2281d;
+}
+
+@media (max-width: 1850px) {
+    /* .library-container {
+        background-color: red;
+    } */
+
+    .library-container #playlists-container {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    #library-landing #popup #particular-playlist {
+        width: 500px;
+        height: 600px;
+
+        padding: 14px 20px;
+    }
+
+    #library-landing #popup #particular-videos-container {
+        width: 100%;
+        height: 270px;
+        margin-top: 16px;
+    
+        border: 1px solid black;
+        border-radius: 15px 15px 0 0;
+    
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #library-landing #popup #particular-buttons-container {
+        height: 34px;
+        /* margin-top: 30px; */
+
+        bottom: -34px;
+    }
+
+    #library-landing #popup #particular-buttons-container > button {
+        font-size: 1.4rem;
+    }
+
+    #library-landing #popup #particular-buttons-container #edit-playlist,
+    #library-landing #popup #particular-buttons-container #remove-playlist {
+        font-size: 1.2rem;
+        line-height: 14px;
+    }
+    
+}
+
+@media (max-width: 1450px) {
+    /* .library-container {
+        background-color: red;
+    } */
+
+    .library-container #playlists-container {
+        grid-template-columns: 1fr 1fr;
+
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+}

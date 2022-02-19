@@ -12,11 +12,11 @@
 
 ## 📷 Algumas Imagens [Some images]
 <div>
- <img src="https://i.imgur.com/Wc1fUzx.png" width="100%" height="520px">   
+ <img src="https://i.imgur.com/Wc1fUzx.png" width="100%" height="500px">   
   
- <img src="https://i.imgur.com/N6XdgTE.png" width="100%" height="520px">   
+ <img src="https://i.imgur.com/N6XdgTE.png" width="100%" height="500px">   
   
- <img src="https://i.imgur.com/2fYkr9k.png" width="100%" height="520px">        
+ <img src="https://i.imgur.com/2fYkr9k.png" width="100%" height="500px">        
 </div>
 
 

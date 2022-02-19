@@ -29,9 +29,13 @@
  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="80" height="60"/>
 </div>
 
-## 📝 Alguns problemas [Some problems]
-- ⭕ Ao hospedar o site, algumas funcionalidades não funcionaram como o esperado. [When hosting the site, some functionalities didnt worked as expected]
-- ⭕ Os problemas e tentativas de soluções estão descritos no relátorio. [The problems and solution attempts are described in the report]
-- ⭕ Ocorreram alterações nos downloads automáticos. [Ocurred somes changes on automatic downloads]
-- ⭕ Na versão hospedada, só é possível baixar 1 vídeo por vez. [In the hosted version, it is possible to download just 1 video per time]
-- ⭕ A seguir, um vídeo do site funcionando corretamente quando em localhost: 
+## 🛑 Alguns problemas [Some problems]
+⭕ Ao hospedar o site, algumas funcionalidades não funcionaram como o esperado. [When hosting the site, some functionalities didnt worked as expected]
+
+⭕ Os problemas e tentativas de soluções estão descritos no relátorio. [The problems and solution attempts are described in the report]
+
+⭕ Ocorreram alterações nos downloads automáticos. [Ocurred somes changes on automatic downloads]
+
+⭕ Na versão hospedada, só é possível baixar 1 vídeo por vez. [In the hosted version, it is possible to download just 1 video per time]
+
+⭕ A seguir, um vídeo do site funcionando corretamente quando em localhost: <a href="https://drive.google.com/file/d/1D_xNf6EPIYhu9riLAgIbmxLrl3j5Whyk/view?usp=sharing">Vídeo Exemplo</a> [Next, a video of the site working correctly when in localhost: <a href="https://drive.google.com/file/d/1D_xNf6EPIYhu9riLAgIbmxLrl3j5Whyk/view?usp=sharing">Example Video</a>]

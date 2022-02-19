@@ -32,7 +32,7 @@
  <img title="Postgres" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="80" height="60"/>
 </div>
 
-## 🛑 Alguns problemas [Some problems]
+## 🛑 Alguns desafios [Some challenges]
 ⭕ Ao hospedar o site, algumas funcionalidades não funcionaram como o esperado. [When hosting the site, some functionalities didnt worked as expected]
 
 ⭕ Os problemas e tentativas de soluções estão descritos no relátorio. [The problems and solution attempts are described in the report]

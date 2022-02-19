@@ -14,6 +14,7 @@
 
 ## 📷 Algumas Imagens [Some images]
 <div>
+ <h4>💴 Mais imagens no link [More imagens in the link]: <a href="https://imgur.com/gallery/PNt8gzS">https://imgur.com/gallery/PNt8gzS</a></h4>
  <img src="https://i.imgur.com/Wc1fUzx.png" width="100%" height="500px">   
   
  <img src="https://i.imgur.com/N6XdgTE.png" width="100%" height="500px">   

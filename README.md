@@ -1,8 +1,10 @@
-## 🥇 DownFast
+## 🥇 DownFast (🟠 in progress)
 
 ✔ Plataforma Web para Download de Vídeos e Músicas do Youtube [Web platform to download videos and musics from Youtube]
 
 ✔ Software desenvolvido para trabalho de conclusão de curso do IFRS-Campus Canoas [Software developed to high school term paper]
+
+✔ Projeto orientado pela professora Carla Odete Balestro Silva [Project guided by teacher Carla Odete Balestro Silva]
 
 ✔ Objetivo Geral: Desenvolver uma aplicação web que facilite e agilize o processo de baixar vídeos e músicas do Youtube e permita criação e gerenciamento de playlists. [Main Goal: develop a web application that facilitate and expedite the downloading videos from Youtube process and that allows playlists creation and management.
 
@@ -39,3 +41,12 @@
 ⭕ Na versão hospedada, só é possível baixar 1 vídeo por vez. [In the hosted version, it is possible to download just 1 video per time]
 
 ⭕ A seguir, um vídeo do site funcionando corretamente quando em localhost: <a href="https://drive.google.com/file/d/1D_xNf6EPIYhu9riLAgIbmxLrl3j5Whyk/view?usp=sharing">Vídeo Exemplo</a> [Next, a video of the site working correctly when in localhost: <a href="https://drive.google.com/file/d/1D_xNf6EPIYhu9riLAgIbmxLrl3j5Whyk/view?usp=sharing">Example Video</a>]
+
+## 🕐 Próximas melhorias [Next improvements]
+➕ Arrumar o problema com os downloads [Fix the download problems]
+
+➕ Permitir baixar vídeos cortados [Allow the download of cut videos]
+
+➕ Compatibilidade com Mobile [Mobile compatibilitie]
+
+➕ Download de vídeos de outras plataformas [Videos downloads of others platforms]

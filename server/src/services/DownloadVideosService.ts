@@ -8,6 +8,10 @@ import fs from 'fs';
 import readline from 'readline';
 import path from 'path';
 
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+import ffmpeg from 'fluent-ffmpeg';
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 import Functions from '../functions/Functions';
 const functions = new Functions();
 
@@ -84,46 +88,48 @@ class DownloadVideosService {
                 socketInstance.publishEvent("showProgress", ({msg: "Show Progress"}), sessionId);
 
                 musics.forEach((music, index) => {
-                    const caminho = `${downloadPath}\\${music.name}.mp3`;
+                    const caminho = `${downloadPath}/${music.name}.mp3`;       
 
-                    let downloadMusic = ytdl(music.url, {filter: 'audioonly', quality: 'highestaudio'});
+                    let downloadMusic = ytdl(music.url, {quality: 'highestaudio'});
 
                     let starttime;
-                    downloadMusic.pipe(fs.createWriteStream(caminho));
-
-                    downloadMusic.once('response', () => {
-                        console.log('Download Iniciado');
-                        starttime = Date.now();
-
-                        socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
-                    });
                     
-                    downloadMusic.on('progress', (chunkLength, downloaded, total) => {
-                        const percent = downloaded / total;
-                        const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
-                        const estimatedDownloadTime = (downloadedMinutes / percent) - downloadedMinutes;
-                        console.log(percent);
-                        // readline.cursorTo(process.stdout, 0);
-                        // process.stdout.write(`${(percent * 100).toFixed(2)}% downloaded `);
-                        // process.stdout.write(`(${(downloaded / 1024 / 1024).toFixed(2)}MB of ${(total / 1024 / 1024).toFixed(2)}MB)\n`);
-                        // process.stdout.write(`running for: ${downloadedMinutes.toFixed(2)}minutes`);
-                        // process.stdout.write(`, estimated time left: ${estimatedDownloadTime.toFixed(2)}minutes `);
-                        // // readline.moveCursor(process.stdout, 0, -1);
+                    ffmpeg(downloadMusic)
+                        .toFormat('mp3')
+                        .audioBitrate(128)
+                        .save(caminho)
 
-                        socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
-                    });
+                        //Download Iniciado
+                        .on('start', () => {
+                            console.log('Download Iniciado');
+                            starttime = Date.now();
+    
+                            socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
+                        })
 
-                    downloadMusic.on('end', () => {
-                        // process.stdout.write('\n\n');
-                        // console.log(`\ndone, thanks - ${(Date.now() - starttime) / 1000}s`);
-                        console.log('download finlaizado4');
+                        // Download em Progresso
+                        .on('stderr', (total) => {
+                            console.log(total);
+                            // console.log('Show progress ', downloaded, total );
+                            // const percent = downloaded / total;
+                            // const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
+                            // const estimatedDownloadTime = (downloadedMinutes / percent) - downloadedMinutes;
+                            // console.log(percent);   
+    
+                            //socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
+                        })
 
-                        socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
-                    });
+                        // Download Finalizado
+                        .on('end', () => {
+                            console.log('download finlaizado');
+    
+                            socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
+                        })
 
-                    downloadMusic.on('error', () => {
-                        console.log('Download com Erro!');
-                    })
+                        //Download com Erros
+                        .on('error', (error) => {
+                            console.log(error);
+                        })
                 })
             }
         })

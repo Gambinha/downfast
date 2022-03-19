@@ -213,7 +213,7 @@ function Home() {
         setLoading(true);
 
         let queue = async.queue((task, callback) => { //AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc
-            api.get(`https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task}`
+            api.get(`https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task} lyrics`
             ).then(response => {
                 const searchedVideo: any = response.data.items[0];
 

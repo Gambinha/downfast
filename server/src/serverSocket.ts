@@ -40,8 +40,6 @@ export class SocketInit {
 
     public publishEvent(event: string, data: any, sessionId: string) {
         const thisSocketId = this.sockets[sessionId];
-        console.log(sessionId);
-        console.log(thisSocketId);
 
         this.socketIo.to(thisSocketId).emit(event, data);
     }

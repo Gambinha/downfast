@@ -11,7 +11,7 @@ class Functions {
     }
 
     removeSpecialCaracteres(name: string) {
-        const er = /[&\/\\#,"”“'`[+||()$~%.'":*?\]<>\{}/|]/g;
+        const er = /[&\/\#,"”“'`[+|()$~%.'":*?\]<>\{}/|]/g;
         let newName = name.replace(er, "");
         
         return newName;

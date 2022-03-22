@@ -12,10 +12,11 @@ import ytpl from 'ytpl';
 
 import fs from 'fs';
 
-
 import {SocketInit} from "../serverSocket";
 
 class DownloadsController {
+
+    // download all videos
     async getLinks(request:Request, response: Response) {
         const {
             videos,
@@ -24,34 +25,26 @@ class DownloadsController {
             sessionId
         } = request.body 
 
-        if(format === 'mp4') {
-            await downloadVideosService.executeMP4(videos, sessionId, downloadPath);
-        }
-        else if(format === 'mp3') {
-            await downloadVideosService.executeMP3(videos, sessionId, downloadPath);
-        }
-
-        return response.status(201).json({message: 'Download Iniciado'});
-    }
-
-    async downloadOneVideo(request:Request, response: Response) {
-        const {
+        const downloadsInfo = {
             videos,
             format,
             downloadPath,
             sessionId
-        } = request.body 
+        }
 
-        if(format === 'mp4') {
-            await downloadVideosService.executeMP4(videos, sessionId, downloadPath);
-        }
-        else if(format === 'mp3') {
-            await downloadVideosService.executeMP3(videos, sessionId, downloadPath);
-        }
+        downloadVideosService.downloadAll(downloadsInfo);
+
+        // if(format === 'mp4') {
+        //     await downloadVideosService.executeMP4(videos, sessionId, downloadPath);
+        // }
+        // else if(format === 'mp3') {
+        //     await downloadVideosService.executeMP3(videos, sessionId, downloadPath);
+        // }
 
         return response.status(201).json({message: 'Download Iniciado'});
     }
 
+    // download one video by browser
     async getLink(request: Request, response: Response) {
         const {
             url,
@@ -79,6 +72,7 @@ class DownloadsController {
         }
     }
 
+    // validate and get some infos of a youtube video
     async getInformations(request:Request, response: Response) {
         const {
             id
@@ -90,28 +84,13 @@ class DownloadsController {
             const info = await downloadVideosService.getInformations(id);
 
             return response.status(201).json(info);
-
-            // if(license === 'youtube') {
-            //     const info = await downloadVideosService.getInformationsYT(id);
-
-            //     return response.status(201).json(info);
-            // }
-            // else if(license === 'creativeCommon') {
-            //     const info = await downloadVideosService.getInformationsCC(id);
-
-            //     return response.status(201).json(info);
-            // }
-            // else {
-            //     const info = await downloadVideosService.getInformations(id);
-
-            //     return response.status(201).json(info);
-            // }
         }
         else {
             return response.status(201).json("false");
         }
     }
 
+    // get all the video of a playlist
     async getUrlsByPlaylistId(request: Request, response: Response) {
         const {
             playlistId

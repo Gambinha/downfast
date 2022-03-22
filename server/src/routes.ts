@@ -40,7 +40,6 @@ router.get("/playlist/:user_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistContro
 router.put("/playlist/:user_id/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.addVideos);
 
 router.post("/downloads", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getLinks);
-router.get("/downloadOne", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.downloadOneVideo);
 router.get("/download", downloadController.getLink);
 router.post("/downloads/getInfos", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getInformations);
 router.post("/downloads/getInfosByPlaylist", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getUrlsByPlaylistId);

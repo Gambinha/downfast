@@ -230,11 +230,11 @@ function Home() {
                         setShowSearchWarning(false);
 
                         const video = {
-                            name: searchedVideo.snippet.title,
+                            name: functions.removeSpecialCaracteres(searchedVideo.snippet.title),
                             url: newUrl
                         }
                         const progressingVideo = {
-                            name: searchedVideo.snippet.title,
+                            name: functions.removeSpecialCaracteres(searchedVideo.snippet.title),
                             url: newUrl,
                             status: 'waiting',
                             progress: 0
@@ -386,12 +386,12 @@ function Home() {
                     setShowSearchWarning(false);
 
                     const video = {
-                        name,
+                        name: functions.removeSpecialCaracteres(name),
                         url
                     }
 
                     const progressingVideo = {
-                        name,
+                        name: functions.removeSpecialCaracteres(name),
                         url,
                         status: 'waiting',
                         progress: 0
@@ -504,7 +504,7 @@ function Home() {
 
         socket.on('startDownload', ({msg, index}) => {
             const progressArray = progressingVideosArray;
-            progressArray[index].status = msg; //progress
+            progressArray[index].status = 'progress'; //progress
 
             contStart++;
             setProgressingVideosArray([...progressArray]);
@@ -520,7 +520,7 @@ function Home() {
 
         socket.on('finishedDownload', ({msg, index}) => {
             const progressArray = progressingVideosArray;
-            progressArray[index].status = msg; //finished
+            progressArray[index].status = 'finished'; //finished
 
             contFinished++;
             setProgressingVideosArray([...progressArray]);
@@ -540,6 +540,20 @@ function Home() {
 
                 socket.disconnect();
             }
+        })
+
+        socket.on('errorInDownload', ({msg, error}) => {
+            const allVideos = progressingVideosArray;
+
+            allVideos.forEach(video => {
+                video.status = 'error';
+                video.progress = 0;
+            })
+
+            setShowDownloadWarning(true);
+            setDownloadWarning('*Nomes de arquivos inválidos!');
+
+            socket.disconnect();
         })
     }
 
@@ -972,6 +986,9 @@ function Home() {
                                                 }
                                                 { item.status === 'progress'
                                                     && <MdIcons.MdFileDownload size={15} color='blue' />
+                                                }
+                                                { item.status === 'error'
+                                                    && <AiIcons.AiOutlineExclamation size={15} color='red' />
                                                 }
                                             </div>
                                         </div>

@@ -26,6 +26,13 @@ class Functions {
         
         return;
     }
+
+    removeSpecialCaracteres(name: string) {
+        const er = /[\\,"”“'`|$~%'"<>{}/|]/g;
+        let newName = name.replace(er, "");
+        
+        return newName;
+    }
 }
 
 export default Functions;

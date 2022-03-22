@@ -17,7 +17,7 @@ import {SocketInit} from "../serverSocket";
 class DownloadsController {
 
     // download all videos
-    async getLinks(request:Request, response: Response) {
+    downloadVideosList(request:Request, response: Response) {
         const {
             videos,
             format,
@@ -33,13 +33,6 @@ class DownloadsController {
         }
 
         downloadVideosService.downloadAll(downloadsInfo);
-
-        // if(format === 'mp4') {
-        //     await downloadVideosService.executeMP4(videos, sessionId, downloadPath);
-        // }
-        // else if(format === 'mp3') {
-        //     await downloadVideosService.executeMP3(videos, sessionId, downloadPath);
-        // }
 
         return response.status(201).json({message: 'Download Iniciado'});
     }

@@ -39,7 +39,7 @@ router.delete("/playlist/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlis
 router.get("/playlist/:user_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.showUserPlaylists);
 router.put("/playlist/:user_id/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.addVideos);
 
-router.post("/downloads", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getLinks);
+router.post("/downloads", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.downloadVideosList);
 router.get("/download", downloadController.getLink);
 router.post("/downloads/getInfos", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getInformations);
 router.post("/downloads/getInfosByPlaylist", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getUrlsByPlaylistId);

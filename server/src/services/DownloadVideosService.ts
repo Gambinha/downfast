@@ -6,7 +6,7 @@ import ytpl from 'ytpl';
 
 import fs from 'fs';
 import readline from 'readline';
-import path from 'path';
+import path, { format } from 'path';
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import ffmpeg from 'fluent-ffmpeg';
@@ -16,8 +16,6 @@ import Functions from '../functions/Functions';
 const functions = new Functions();
 
 import {SocketInit} from "../serverSocket";
-
-import async from 'async';
 
 interface videoObject {
     name: string,
@@ -58,11 +56,11 @@ class DownloadVideosService {
             
                     switch (format) {
                         case 'mp3':
-                            this.downloadMP3(video, output, socketInstance, sessionId, index);
+                            this.downloadMP3(video, output, socketInstance, sessionId, index, format);
                             break;
                         
                         case 'mp4':
-                            this.downloadMP4(video, output, socketInstance, sessionId, index);
+                            this.downloadMP4(video, output, socketInstance, sessionId, index, format);
                             break;
                     }
                 })
@@ -71,37 +69,68 @@ class DownloadVideosService {
     }
 
     //download mp3 files
-    downloadMP3(music: videoObject, output: string, socketInstance: SocketInit, sessionId: string, index: number) {
+    downloadMP3(music: videoObject, output: string, socketInstance: SocketInit, sessionId: string, index: number, format: string) {
         let downloadMusic = ytdl(music.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
         });
-
-        let starttime;
         
-        ffmpeg(downloadMusic)
-            .toFormat('mp3')
+        const downloadStream = ffmpeg(downloadMusic)
+            .toFormat(format)
             .audioBitrate(128)
             .save(output)
 
+        this.downloadEvents(downloadStream, socketInstance, sessionId, index, format);
+    }
+
+    //download mp4 files
+    downloadMP4(video: videoObject, output: string, socketInstance: SocketInit, sessionId: string, index: number, format: string) {
+        const downloadVideo = ytdl(video.url, {
+            filter: format => format.container === 'mp4'
+        });
+        
+        const downloadStream = ffmpeg(downloadVideo)
+            .toFormat(format)
+            .save(output)
+
+        this.downloadEvents(downloadStream, socketInstance, sessionId, index, format);
+    }
+
+    downloadEvents(downloadStream: ffmpeg.FfmpegCommand, socketInstance: SocketInit, sessionId: string, index: number, format: string) {
+        // while not automatic
+        const durationTime: number = null;
+
+        let kbFileSize: number;
+
+        downloadStream
             //Download Started
             .on('start', () => {
                 console.log('Download Iniciado');
-                starttime = Date.now();
 
                 socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
             })
 
-            // Download Progress
-            .on('progress', p => {
-                console.log(p);
-                // console.log('Show progress ', downloaded, total );
-                // const percent = downloaded / total;
-                // const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
-                // const estimatedDownloadTime = (downloadedMinutes / percent) - downloadedMinutes;
-                // console.log(percent);   
+            // Download Infos
+            .on('codecData', function(data) {
+                console.log(data)
+                let seconds: number;
 
-                //socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
+                if(durationTime != null) {
+                    seconds = durationTime;
+                }
+                else {
+                    seconds = functions.convertHMS(data.duration);
+                }
+
+                kbFileSize = functions.convertToKb(seconds, format)
+            })
+
+            // Download Progress
+            .on('progress', progress => {
+                const currentDownloadedKbSize = progress.targetSize;
+                const percent = (currentDownloadedKbSize * 1 / kbFileSize); // Regra de 3 to find percent of download file
+
+                socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
             })
 
             // Download Finished
@@ -118,42 +147,11 @@ class DownloadVideosService {
             })
     }
 
-    //download mp4 files
-    downloadMP4(video: videoObject, output: string, socketInstance: SocketInit, sessionId: string, index: number) {
-        const downloadVideo = ytdl(video.url, {
-            filter: format => format.container === 'mp4'
-        });
-
-        let starttime;
-        downloadVideo.pipe(fs.createWriteStream(output));
-
-        //Download started
-        downloadVideo.once('response', () => {
-            console.log('Download Iniciado');
-            starttime = Date.now();
-
-            socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
-        });
-
-        //Download Progress
-        downloadVideo.on('progress', (chunkLength, downloaded, total) => {
-            const percent = downloaded / total;
-
-            socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
-        });
-        
-        //Download Finished
-        downloadVideo.on('end', () => {
-            process.stdout.write('\n\n');
-            // console.log(`\ndone, thanks - ${(Date.now() - starttime) / 1000}s`);
-
-            socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
-        });
-    }
-
     //get the title of the video by the youtube url(id)
     async getInformations(id: string) {
         const infos = await ytdl.getInfo(id);
+
+        console.log(infos.timestamp);
 
         const title = infos.videoDetails.title;
 
@@ -222,3 +220,29 @@ class DownloadVideosService {
 }
 
 export {DownloadVideosService};
+
+        // let starttime;
+        // downloadVideo.pipe(fs.createWriteStream(output));
+
+        // //Download started
+        // downloadVideo.once('response', () => {
+        //     console.log('Download Iniciado');
+        //     starttime = Date.now();
+
+        //     socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
+        // });
+
+        // //Download Progress
+        // downloadVideo.on('progress', (chunkLength, downloaded, total) => {
+        //     const percent = downloaded / total;
+
+        //     socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
+        // });
+        
+        // //Download Finished
+        // downloadVideo.on('end', () => {
+        //     process.stdout.write('\n\n');
+        //     // console.log(`\ndone, thanks - ${(Date.now() - starttime) / 1000}s`);
+
+        //     socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
+        // });

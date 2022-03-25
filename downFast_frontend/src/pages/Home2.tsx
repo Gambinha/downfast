@@ -375,7 +375,7 @@ function Home() {
                 headers: {
                     "Authorization": `${token}`
                 }
-            }).then(response => {
+            }).then((response) => {
                 const name = response.data;
 
                 if(name === 'false') {
@@ -402,11 +402,26 @@ function Home() {
                 }
             }).catch((error: AxiosError) => {
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
-                    const errorMessage = error.response.data.message;
+                    const status = error.response.status;
+                    const data = error.response.data;
 
-                    if(isTokenValid === false) {
-                        handleLogout(errorMessage);
+                    if(status === 403) {
+                        if(data.message === 'Invalid ID') {
+                            setShowSearchWarning(true);
+                            setSearchWarning('*Insira um link válido!');
+                        }
+                        else if(data.message === 'Invalid Video') {
+                            setShowSearchWarning(true);
+                            setSearchWarning('*Video inválido!');
+                        }
+                    }
+                    else if(status === 500) {
+                        const isTokenValid = data.auth;
+                        const errorMessage = data.message;
+    
+                        if(isTokenValid === false) {
+                            handleLogout(errorMessage);
+                        }
                     }
                 }
                 else {

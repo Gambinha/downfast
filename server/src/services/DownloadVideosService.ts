@@ -97,15 +97,30 @@ class DownloadVideosService {
         streamEventsService.ytdlCoreEvents(downloadVideo, socketInstance, sessionId, index);    
     }
 
-    //get the title of the video by the youtube url(id)
+    //get some infos of the video by the youtube url(id)
     async getInformations(id: string) {
-        const infos = await ytdl.getInfo(id);
+        let videoInfos = {
+            title: '',
+            success: false
+        }
 
-        console.log(infos.timestamp);
+        await ytdl.getInfo(id)
+            .then((infos) => {
+                videoInfos = {
+                    title: infos.videoDetails.title,
+                    success: true
+                }
+            })
+            .catch((error) => {
+                console.log('Error: ', error.message);
 
-        const title = infos.videoDetails.title;
-
-        return title;
+                videoInfos = {
+                    title: null,
+                    success: false
+                }
+            })
+        
+        return videoInfos;
     }
 
     // async getInformationsYT(id: string) {

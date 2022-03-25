@@ -74,12 +74,17 @@ class DownloadsController {
         const isValidId = ytdl.validateID(id);
 
         if(isValidId) {
-            const info = await downloadVideosService.getInformations(id);
+            const videoInfos = await downloadVideosService.getInformations(id);
 
-            return response.status(201).json(info);
+            if(videoInfos.success) {
+                return response.status(201).json({success: true, message: "Success", data: videoInfos});
+            }
+            else {
+                return response.status(403).json({success: false, message: "Invalid Video", data: null});
+            }
         }
         else {
-            return response.status(201).json("false");
+            return response.status(403).json({success: false, message: "Invalid ID", data: null});
         }
     }
 

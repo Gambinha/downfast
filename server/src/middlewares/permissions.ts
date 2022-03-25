@@ -50,6 +50,6 @@ function is(roles: String[]) {
     };
     
     return roleAuthorized;
-    }
+}
 
 export {is};

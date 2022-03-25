@@ -15,6 +15,9 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 import Functions from '../functions/Functions';
 const functions = new Functions();
 
+import {StreamEventsService} from './StreamEventsService';
+const streamEventsService = new StreamEventsService();
+
 import {SocketInit} from "../serverSocket";
 
 interface videoObject {
@@ -70,7 +73,7 @@ class DownloadVideosService {
 
     //download mp3 files
     downloadMP3(music: videoObject, output: string, socketInstance: SocketInit, sessionId: string, index: number, format: string) {
-        let downloadMusic = ytdl(music.url, {
+        const downloadMusic = ytdl(music.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
         });
@@ -80,7 +83,7 @@ class DownloadVideosService {
             .audioBitrate(128)
             .save(output)
 
-        this.downloadEvents(downloadStream, socketInstance, sessionId, index, format);
+        streamEventsService.ffmpegEvents(downloadStream, socketInstance, sessionId, index, format);
     }
 
     //download mp4 files
@@ -88,63 +91,10 @@ class DownloadVideosService {
         const downloadVideo = ytdl(video.url, {
             filter: format => format.container === 'mp4'
         });
-        
-        const downloadStream = ffmpeg(downloadVideo)
-            .toFormat(format)
-            .save(output)
 
-        this.downloadEvents(downloadStream, socketInstance, sessionId, index, format);
-    }
+        downloadVideo.pipe(fs.createWriteStream(output));
 
-    downloadEvents(downloadStream: ffmpeg.FfmpegCommand, socketInstance: SocketInit, sessionId: string, index: number, format: string) {
-        // while not automatic
-        const durationTime: number = null;
-
-        let kbFileSize: number;
-
-        downloadStream
-            //Download Started
-            .on('start', () => {
-                console.log('Download Iniciado');
-
-                socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
-            })
-
-            // Download Infos
-            .on('codecData', function(data) {
-                console.log(data)
-                let seconds: number;
-
-                if(durationTime != null) {
-                    seconds = durationTime;
-                }
-                else {
-                    seconds = functions.convertHMS(data.duration);
-                }
-
-                kbFileSize = functions.convertToKb(seconds, format)
-            })
-
-            // Download Progress
-            .on('progress', progress => {
-                const currentDownloadedKbSize = progress.targetSize;
-                const percent = (currentDownloadedKbSize * 1 / kbFileSize); // Regra de 3 to find percent of download file
-
-                socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
-            })
-
-            // Download Finished
-            .on('end', () => {
-                console.log('download finlaizado');
-
-                socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
-            })
-
-            //Download wth Error
-            .on('error', (error) => {
-                //Error.message = "ffmpeg exited with code 1: E:\Meus Documentos\Downloads/The Beatles - Help |.mp3: Invalid argument"
-                socketInstance.publishEvent("errorInDownload", ({msg: error.message}), sessionId);
-            })
+        streamEventsService.ytdlCoreEvents(downloadVideo, socketInstance, sessionId, index);    
     }
 
     //get the title of the video by the youtube url(id)
@@ -220,29 +170,3 @@ class DownloadVideosService {
 }
 
 export {DownloadVideosService};
-
-        // let starttime;
-        // downloadVideo.pipe(fs.createWriteStream(output));
-
-        // //Download started
-        // downloadVideo.once('response', () => {
-        //     console.log('Download Iniciado');
-        //     starttime = Date.now();
-
-        //     socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
-        // });
-
-        // //Download Progress
-        // downloadVideo.on('progress', (chunkLength, downloaded, total) => {
-        //     const percent = downloaded / total;
-
-        //     socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
-        // });
-        
-        // //Download Finished
-        // downloadVideo.on('end', () => {
-        //     process.stdout.write('\n\n');
-        //     // console.log(`\ndone, thanks - ${(Date.now() - starttime) / 1000}s`);
-
-        //     socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
-        // });

@@ -48,6 +48,6 @@
 
 ➕ Permitir baixar vídeos cortados [Allow the download of cut videos]
 
-➕ Compatibilidade com Mobile [Mobile compatibilitie]
+➕ Compatibilidade com Mobiles [Mobile compatibilitie]
 
 ➕ Download de vídeos de outras plataformas [Videos downloads of others platforms]

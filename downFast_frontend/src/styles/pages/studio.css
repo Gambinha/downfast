@@ -1,0 +1,152 @@
+#studio-landing {
+    width: 100%;
+    height: 100%;
+}
+
+.studio-container {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    z-index: 1;
+}
+
+.studio-container #page-title {
+    width: 40%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 50px;
+}
+
+.studio-container #page-title h2 {
+    font-size: 1.6em;
+}
+
+.studio-container #studio-content {
+    width: 86%;
+    height: 670px;
+    margin-top: 40px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.studio-container #studio-content .content-div {
+    height: 100%;
+    max-height: 660px;
+    margin: 0 20px;
+
+    border: 1px solid black;
+}
+
+.studio-container #studio-content #waiting-videos {
+    width: 25%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid var(--color-primary-darker);
+    background-color: #f5f5f5;
+    border-radius: 1em;
+}
+
+.studio-container #studio-content #waiting-videos .box-title {
+    width: 100%;
+    flex: 1;
+    
+    border-bottom: 2px solid var(--color-primary-darker);
+    border-radius: 1em 1em 0 0;
+    background-color: var(--color-primary-darker);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 0.8em;
+    color: var(--color-title-in-primary);
+}
+
+.studio-container #studio-content #waiting-videos .box-content {
+    width: 100%;
+    flex: 14;
+    background-color: #f5f5f5;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow-y: auto;
+
+    border-radius: 0 0 1em 1em;
+}
+
+.studio-container #studio-content #waiting-videos .box-content .box-line {
+    width: 100%;
+    height: 30px;
+    background-color: #f5f5f5;
+
+    display: flex;
+    align-items: center;
+
+    position: relative;
+
+    padding: .8em .4em;
+    border-bottom: 1px solid var(--color-primary-darker);
+}
+
+.studio-container #studio-content #waiting-videos .box-content .box-line:hover {
+    cursor: pointer;
+    background-color: #e9e6e6;
+}
+
+.studio-container #studio-content #waiting-videos .box-content .box-line span {
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+
+    font-size: .9em;
+}
+
+.studio-container #studio-content #current-video {
+    width: 40%;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: space-between;
+}
+
+.studio-container #studio-content #current-video #video-informations {
+    width: 86%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.studio-container #studio-content #current-video #video-informations h2 {
+     white-space: nowrap;
+     overflow: hidden; 
+     text-overflow: ellipsis;
+}
+
+.studio-container #studio-content #current-video {
+
+}
+
+.studio-container #studio-content #ready-videos {
+    width: 25%;
+}
+
+.studio-container #studio-content #ready-videos h2 {
+    width: 100%;
+}

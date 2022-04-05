@@ -123,53 +123,6 @@ class DownloadVideosService {
         return videoInfos;
     }
 
-    // async getInformationsYT(id: string) {
-    //     const infos = await ytdl.getInfo(id);
-    
-    //     const title = infos.videoDetails.title;
-    //     const newTitle = functions.removeSpecialCaracteres(title);   
-
-    //     const isLicensed = infos.videoDetails.media['licensed to youtube by'];
-
-    //     if(isLicensed) {
-    //         return 'not allowed';
-    //     }
-    //     else {
-    //         return newTitle;
-    //     }
-    // }
-
-    // async getInformationsCC(id: string) {
-    //     const infos = await ytdl.getInfo(id);
-
-    //     const title = infos.videoDetails.title;
-    //     const newTitle = functions.removeSpecialCaracteres(title);
-
-    //     if(infos.videoDetails.media['license']) {
-    //         const ccLicense = infos.videoDetails.media['license'];
-
-    //         if(
-    //             ccLicense.includes('reuse allowed')
-    //             || newTitle.toLowerCase().includes('sem copyright')
-    //             || newTitle.toLowerCase().includes('no copyright')
-    //         ) {
-    //             return newTitle;
-    //         }
-    //         else {
-    //             return 'not allowed';
-    //         }
-    //     }
-    //     else if(
-    //         newTitle.toLowerCase().includes('sem copyright')
-    //         || newTitle.toLowerCase().includes('no copyright')
-    //     ) {
-    //         return newTitle;
-    //     }
-    //     else {
-    //         return 'not allowed';
-    //     }
-    // }
-
     //know if it is a valid youtube playlist
     async getInformationsByPlaylist(id: string) {
         //verifica se o id é válido

@@ -11,7 +11,8 @@ import async from 'async';
 
 import '../styles/pages/home2.css';
 
-import Navbar from '../components/Navbar';import api from '../services/api';
+import Navbar from '../components/Navbar';
+import api from '../services/api';
 import CreatePlaylistBox from '../components/CreatePlaylistBox';
 
 import Functions from '../functions/Functions';
@@ -26,7 +27,7 @@ import blocoNotas from '../images/Bloco_Notas.png';
 import dotenv from 'dotenv';
 dotenv.config();
 
-interface VideosInformations {
+export interface VideosInformations {
     name: string;
     url: string;
 }
@@ -246,11 +247,26 @@ function Home() {
                         callback();
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
-    
-                            if(isTokenValid === false) {
-                                handleLogout(errorMessage);
+                            const status = error.response.status;
+                            const data = error.response.data;
+        
+                            if(status === 403) {
+                                if(data.message === 'Invalid ID') {
+                                    setShowSearchWarning(true);
+                                    setSearchWarning('*Insira um link válido!');
+                                }
+                                else if(data.message === 'Invalid Video') {
+                                    setShowSearchWarning(true);
+                                    setSearchWarning('*Video inválido!');
+                                }
+                            }
+                            else if(status === 500) {
+                                const isTokenValid = data.auth;
+                                const errorMessage = data.message;
+            
+                                if(isTokenValid === false) {
+                                    handleLogout(errorMessage);
+                                }
                             }
                         }
                         else {

@@ -186,7 +186,7 @@ function Usuarios() {
 
     return(
         <div id="usuarios-landing">
-            <Navbar page={6} page_title={'Usuarios'}/>
+            <Navbar page={7} page_title={'Usuarios'}/>
 
             <div className="usuarios-container">
             <div id="search-bar">

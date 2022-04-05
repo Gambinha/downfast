@@ -246,7 +246,7 @@ function Settings() {
 
     return(
         <div id="home-landing">
-            <Navbar page={4} page_title={'Settings'}/>
+            <Navbar page={5} page_title={'Settings'}/>
 
             <div className='settings-container'>
                 <div id="title-container">

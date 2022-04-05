@@ -60,7 +60,6 @@ class UserController {
             }
 
             const userRepository = getCustomRepository(UserRepository);
-            console.log(userRepository);
 
             const user = await userRepository.findOne({id});
 

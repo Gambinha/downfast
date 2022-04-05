@@ -391,7 +391,7 @@ function Library() {
 
     return(
         <div id="library-landing">
-            <Navbar page={2} page_title={'Library'}/>
+            <Navbar page={3} page_title={'Library'}/>
 
             { showCreatePlaylist && 
                 <CreatePlaylistBox

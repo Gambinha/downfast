@@ -7,7 +7,7 @@
       "esnext"
     ],
     "allowJs": true,
-    "outDir": "build",                                 /* Redirect output structure to the directory. */
+    "outDir": "build",
     "rootDir": "src", 
     "skipLibCheck": true,
     "esModuleInterop": true,

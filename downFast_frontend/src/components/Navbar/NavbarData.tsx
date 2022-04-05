@@ -4,12 +4,20 @@ import * as IoIcons from 'react-icons/io';
 import * as RiIcons from 'react-icons/ri';
 import * as GiIcons from 'react-icons/gi';
 import * as FaIcons from 'react-icons/fa';
+import * as BiIcons from 'react-icons/bi';
 
 export const SidebarData = [
   {
     title: 'Home',
     path: '/home',
     icon: <AiIcons.AiFillHome />,
+    cName: 'nav-text',
+    roleRequested: ['ROLE_USER', 'ROLE_ADMIN']
+  },
+  {
+    title: 'Studio',
+    path: '/studio',
+    icon: <BiIcons.BiMovie />,
     cName: 'nav-text',
     roleRequested: ['ROLE_USER', 'ROLE_ADMIN']
   },

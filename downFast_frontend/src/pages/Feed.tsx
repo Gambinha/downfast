@@ -466,7 +466,7 @@ function Feed() {
 
     return(
         <div id="feed-landing">
-            <Navbar page={3} page_title={'Feed'}/>
+            <Navbar page={4} page_title={'Feed'}/>
 
             { showupdatePlaylist &&   
                 <div id="playlists-list-container">

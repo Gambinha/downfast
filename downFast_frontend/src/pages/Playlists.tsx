@@ -161,7 +161,7 @@ function Playlists() {
 
     return(
         <div id="playlists-landing">
-            <Navbar page={5} page_title={'Playlists'}/>
+            <Navbar page={6} page_title={'Playlists'}/>
 
             <div className="playlists-container">
                 <div id="search-bar">

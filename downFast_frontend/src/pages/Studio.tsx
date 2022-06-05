@@ -104,9 +104,9 @@ const Studio: React.FC<StudioProps> = (props) => {
 
                             <div id="video-exibition">
                                 <iframe 
-                                    width="560" 
-                                    height="315" 
-                                    src="https://www.youtube.com/embed/C4MpzSMkinw"
+                                    width="100%" 
+                                    height="260" 
+                                    src="https://www.youtube.com/embed/LlvBzyy-558"
                                     title="YouTube video player" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 >

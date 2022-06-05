@@ -29,9 +29,12 @@ class Functions {
 
     removeSpecialCaracteres(name: string) {
         const er = /[\\,"”“'`|$~%'"<>{}/|]/g;
-        let newName = name.replace(er, "");
-        
-        return newName;
+        return name.replace(er, "");
+    }
+
+    getEmbedLink(url: string) {
+        console.log(url.replace("https://www.youtube.com/watch?v=", "https://www.youtube.com/embed/"))
+        return url.replace("watch?v=", "embed/");
     }
 }
 

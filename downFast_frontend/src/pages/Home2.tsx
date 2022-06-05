@@ -30,11 +30,13 @@ dotenv.config();
 export interface VideosInformations {
     name: string;
     url: string;
+    embedUrl: string;
 }
 
 interface ProgressingVideosInformations {
     name: string;
     url: string;
+    embedUrl: string;
     status: string;
     progress: number;
 }
@@ -232,11 +234,13 @@ function Home() {
 
                         const video = {
                             name: functions.removeSpecialCaracteres(searchedVideo.snippet.title),
-                            url: newUrl
+                            url: newUrl,
+                            embedUrl: functions.getEmbedLink(newUrl)
                         }
                         const progressingVideo = {
                             name: functions.removeSpecialCaracteres(searchedVideo.snippet.title),
                             url: newUrl,
+                            embedUrl: functions.getEmbedLink(newUrl),
                             status: 'waiting',
                             progress: 0
                         }
@@ -392,30 +396,27 @@ function Home() {
                     "Authorization": `${token}`
                 }
             }).then((response) => {
-                const name = response.data;
+                const data = response.data;
+                const name = data.data.title;
 
-                if(name === 'false') {
-                    setShowSearchWarning(true);
-                    setSearchWarning('*Insira um link válido!');
+                setShowSearchWarning(false);
+
+                const video = {
+                    name: functions.removeSpecialCaracteres(name),
+                    url,
+                    embedUrl: functions.getEmbedLink(url)
                 }
-                else {
-                    setShowSearchWarning(false);
 
-                    const video = {
-                        name: functions.removeSpecialCaracteres(name),
-                        url
-                    }
-
-                    const progressingVideo = {
-                        name: functions.removeSpecialCaracteres(name),
-                        url,
-                        status: 'waiting',
-                        progress: 0
-                    }
+                const progressingVideo = {
+                    name: functions.removeSpecialCaracteres(name),
+                    url,
+                    embedUrl: functions.getEmbedLink(url),
+                    status: 'waiting',
+                    progress: 0
+                }
         
                     setTestProgressingVideosArray(progressingVideo);
                     setTestVideosArray(video);
-                }
             }).catch((error: AxiosError) => {
                 if(error.response) {
                     const status = error.response.status;
@@ -970,7 +971,7 @@ function Home() {
                         
                         <div id="diretory-pick">
                             <label htmlFor="">Pasta de Destino</label>
-                            <span>(Ex.: E:\Meus_Documentos\Downloads)</span>
+                            <span>(Ex.: D:\Meus_Documentos\Músicas)</span>
                             <input type="text" placeholder='Insira o caminho' onChange={(e) => setVideoPath(e.target.value)} />
                         </div>
 

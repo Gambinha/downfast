@@ -1,0 +1,16 @@
+version: "1.0"
+services:
+  postgresdb:
+    image: postgres:14-bullseye
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: gambinha@123
+      POSTGRES_USER: gambinha
+      POSTGRES_DB: downfast
+    volumes:
+      - postgresdb-data:/var/lib/postgresql/data
+
+volumes:
+  postgresdb-data:

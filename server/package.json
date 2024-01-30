@@ -6,8 +6,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts",
-    "typeorm": "ts-node-dev node_modules/typeorm/cli.js",
-    "start": "node build/server.js"
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js",
+    "start": "node build/server.js",
+    "migration:migrate": "npm run typeorm migration:generate -- -n",
+    "migration:run": "npm run typeorm migration:run"
   },
   "keywords": [],
   "author": "",
@@ -45,7 +47,7 @@
     "ts-node-dev": "^1.1.8",
     "typeorm": "^0.2.34",
     "validator": "^13.6.0",
-    "ytdl-core": "^4.11.0",
+    "ytdl-core": "^4.11.2",
     "ytpl": "^2.2.3"
   }
 }

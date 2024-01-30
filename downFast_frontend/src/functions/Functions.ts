@@ -33,7 +33,6 @@ class Functions {
     }
 
     getEmbedLink(url: string) {
-        console.log(url.replace("https://www.youtube.com/watch?v=", "https://www.youtube.com/embed/"))
         return url.replace("watch?v=", "embed/");
     }
 }

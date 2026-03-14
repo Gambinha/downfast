@@ -15,7 +15,7 @@ import Functions from '../functions/Functions';
 
 import { UserContext } from '../contexts/userData';
 import {PlaylistVideosProps} from './Library';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface PlaylistProps {
     id: string;
@@ -33,7 +33,7 @@ interface PlaylistProps {
 }
 function Feed() {
     const functions = new Functions();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const {userData, addUserData, playlistData} = useContext(UserContext);
 
@@ -77,7 +77,7 @@ function Feed() {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
     }
 
     useEffect(() => {
@@ -168,8 +168,8 @@ function Feed() {
                                 handleGetAllPlaylists();
                             }).catch((error: AxiosError) => {
                                 if(error.response) {
-                                    const isTokenValid = error.response.data.auth;
-                                    const errorMessage = error.response.data.message;
+                                    const isTokenValid = (error.response.data as any).auth;
+                                    const errorMessage = (error.response.data as any).message;
 
                                     if(isTokenValid === false) {
                                         handleLogout(errorMessage);
@@ -242,8 +242,8 @@ function Feed() {
                 setFilteredPlaylists(newPlaylist);
             }).catch((error: AxiosError) => {
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
-                    const errorMessage = error.response.data.message;
+                    const isTokenValid = (error.response.data as any).auth;
+                    const errorMessage = (error.response.data as any).message;
 
                     if(isTokenValid === false) {
                         handleLogout(errorMessage);
@@ -321,8 +321,8 @@ function Feed() {
                                 // console.log(response);
                             }).catch((error: AxiosError) => {
                                 if(error.response) {
-                                    const isTokenValid = error.response.data.auth;
-                                    const errorMessage = error.response.data.message;
+                                    const isTokenValid = (error.response.data as any).auth;
+                                    const errorMessage = (error.response.data as any).message;
             
                                     if(isTokenValid === false) {
                                         handleLogout(errorMessage);
@@ -335,8 +335,8 @@ function Feed() {
 
                         }).catch((error: AxiosError) => {
                             if(error.response) {
-                                const isTokenValid = error.response.data.auth;
-                                const errorMessage = error.response.data.message;
+                                const isTokenValid = (error.response.data as any).auth;
+                                const errorMessage = (error.response.data as any).message;
         
                                 if(isTokenValid === false) {
                                     handleLogout(errorMessage);
@@ -377,8 +377,8 @@ function Feed() {
                                 // console.log(response);
                             }).catch((error: AxiosError) => {
                                 if(error.response) {
-                                    const isTokenValid = error.response.data.auth;
-                                    const errorMessage = error.response.data.message;
+                                    const isTokenValid = (error.response.data as any).auth;
+                                    const errorMessage = (error.response.data as any).message;
             
                                     if(isTokenValid === false) {
                                         handleLogout(errorMessage);
@@ -391,8 +391,8 @@ function Feed() {
 
                         }).catch((error: AxiosError) => {
                             if(error.response) {
-                                const isTokenValid = error.response.data.auth;
-                                const errorMessage = error.response.data.message;
+                                const isTokenValid = (error.response.data as any).auth;
+                                const errorMessage = (error.response.data as any).message;
         
                                 if(isTokenValid === false) {
                                     handleLogout(errorMessage);
@@ -444,8 +444,8 @@ function Feed() {
                         unshowUpdatePopup();
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
+                            const isTokenValid = (error.response.data as any).auth;
+                            const errorMessage = (error.response.data as any).message;
     
                             if(isTokenValid === false) {
                                 handleLogout(errorMessage);

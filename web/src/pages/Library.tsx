@@ -15,7 +15,7 @@ import CreatePlaylistBox from '../components/CreatePlaylistBox';
 import api from '../services/api';
 import Functions from '../functions/Functions';
 import { UserContext } from '../contexts/userData';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 
 export interface PlaylistVideosProps {
@@ -35,7 +35,7 @@ export interface PlaylistProps {
 
 
 function Library() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const emptyArray = {
         id: '', 
         title: '', 
@@ -104,7 +104,7 @@ function Library() {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
     }
 
     useEffect(() => {
@@ -193,8 +193,8 @@ function Library() {
                         handleGetPlaylists();
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
+                            const isTokenValid = (error.response.data as any).auth;
+                            const errorMessage = (error.response.data as any).message;
     
                             if(isTokenValid === false) {
                                 handleLogout(errorMessage);
@@ -226,8 +226,8 @@ function Library() {
                         handleGetPlaylists();
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
+                            const isTokenValid = (error.response.data as any).auth;
+                            const errorMessage = (error.response.data as any).message;
     
                             if(isTokenValid === false) {
                                 handleLogout(errorMessage);
@@ -288,8 +288,8 @@ function Library() {
                 addPlaylistData(playlists);
             }).catch((error: AxiosError) => {
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
-                    const errorMessage = error.response.data.message;
+                    const isTokenValid = (error.response.data as any).auth;
+                    const errorMessage = (error.response.data as any).message;
 
                     if(isTokenValid === false) {
                         handleLogout(errorMessage);
@@ -377,7 +377,7 @@ function Library() {
         removeAllVideosData();
         addVideosData(playlistShowed.videos);
 
-        history.push('/home');
+        navigate('/home');
     }
 
     function updateNamed(newValue: string, position: number) {

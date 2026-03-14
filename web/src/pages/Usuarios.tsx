@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../components/Navbar';
 import { UserContext } from '../contexts/userData';
@@ -24,7 +24,7 @@ interface UsersProps {
 
 function Usuarios() {
     const functions = new Functions();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const {userData, addUserData} = useContext(UserContext);
 
@@ -55,7 +55,7 @@ function Usuarios() {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
     }
     
     useEffect(() => {
@@ -92,8 +92,8 @@ function Usuarios() {
                         setFilteredUsers(currentUsers);
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
+                            const isTokenValid = (error.response.data as any).auth;
+                            const errorMessage = (error.response.data as any).message;
             
                             if(isTokenValid === false) {
                                 handleLogout(errorMessage);
@@ -127,8 +127,8 @@ function Usuarios() {
             setFilteredUsers(users);
         }).catch((error: AxiosError) => {
             if(error.response) {
-                const isTokenValid = error.response.data.auth;
-                const errorMessage = error.response.data.message;
+                const isTokenValid = (error.response.data as any).auth;
+                const errorMessage = (error.response.data as any).message;
 
                 if(isTokenValid === false) {
                     handleLogout(errorMessage);
@@ -167,8 +167,8 @@ function Usuarios() {
                 setFilteredUsers(currentUsers);
             }).catch((error: AxiosError) => {
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
-                    const errorMessage = error.response.data.message;
+                    const isTokenValid = (error.response.data as any).auth;
+                    const errorMessage = (error.response.data as any).message;
     
                     if(isTokenValid === false) {
                         handleLogout(errorMessage);

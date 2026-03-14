@@ -1,9 +1,4 @@
-import {EntityRepository, Repository } from "typeorm";
+import { AppDataSource } from "../database";
 import { Playlist } from "../models/Playlist";
 
-@EntityRepository(Playlist)
-class PlaylistRepository extends Repository<Playlist>{
-
-}
-
-export {PlaylistRepository};
+export const PlaylistRepository = () => AppDataSource.getRepository(Playlist);

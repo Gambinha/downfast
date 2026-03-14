@@ -1,6 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, OneToMany, JoinColumn } from "typeorm";
-import {v4 as uuid} from 'uuid';
-import { Playlist } from "./Playlist";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, OneToMany, JoinColumn, Relation } from "typeorm";
+import type { Playlist } from "./Playlist";
 
 @Entity("users")
 class User {
@@ -20,7 +19,7 @@ class User {
     @Column()
     password: string;
 
-    @Column('simple-array', {array: true})
+    @Column('simple-array', { array: true })
     likedsPlaylists: string[];
 
     @Column()
@@ -29,11 +28,11 @@ class User {
     @CreateDateColumn()
     createdAt: Date;
 
-    @OneToMany(() => Playlist, playlist => playlist.user_id, {
+    @OneToMany(() => require('./Playlist').Playlist, (playlist: any) => playlist.user_id, {
         cascade: ['insert', 'update']
     })
-    @JoinColumn({name: 'user_id'})
-    playlist: Playlist[];
+    @JoinColumn({ name: 'user_id' })
+    playlist: Relation<Playlist[]>;
 }
 
-export {User};
+export { User };

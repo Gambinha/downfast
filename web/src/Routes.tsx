@@ -1,35 +1,33 @@
-import React from 'react';
-import {BrowserRouter, Switch, Route} from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-// import Home from './pages/Home';
-import Home2 from './pages/Home2';
-import Studio from './pages/Studio';
-import Library from './pages/Library';
-import Feed from './pages/Feed';
-import Settings from './pages/Settings';
-import Cadastro from './pages/Cadastro';
-import Playlists from './pages/Playlists';
-import Usuarios from './pages/Usuarios';
+import Cadastro from "./pages/Cadastro";
+import Feed from "./pages/Feed";
+import Home2 from "./pages/Home2";
+import Library from "./pages/Library";
+import Playlists from "./pages/Playlists";
+import Settings from "./pages/Settings";
+import Studio from "./pages/Studio";
+import Usuarios from "./pages/Usuarios";
 
-import { UserProvider } from './contexts/userData';
+import { UserProvider } from "./contexts/userData";
 
-function Routes() {
-    return (
-        <BrowserRouter>
-            <Switch>
-                <UserProvider>
-                    <Route path='/' exact component={Cadastro} />
-                    <Route path='/home' component={Home2} />
-                    <Route path='/studio' component={Studio} />
-                    <Route path='/library' component={Library} />
-                    <Route path='/feed' component={Feed} />
-                    <Route path='/settings' component={Settings} />
-                    <Route path='/playlists' component={Playlists} />
-                    <Route path='/users' component={Usuarios} />
-                </UserProvider>
-            </Switch>
-        </BrowserRouter>
-    );
+function AppRoutes() {
+  return (
+    <BrowserRouter>
+      <UserProvider>
+        <Routes>
+          <Route path="/" element={<Cadastro />} />
+          <Route path="/home" element={<Home2 />} />
+          <Route path="/studio" element={<Studio />} />
+          <Route path="/library" element={<Library />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/playlists" element={<Playlists />} />
+          <Route path="/users" element={<Usuarios />} />
+        </Routes>
+      </UserProvider>
+    </BrowserRouter>
+  );
 }
 
-export default Routes;
+export default AppRoutes;

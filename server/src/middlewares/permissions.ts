@@ -1,28 +1,24 @@
 import { NextFunction, Request, Response } from "express";
-
-import jwt, {decode} from 'jsonwebtoken';
-
-import { getCustomRepository } from 'typeorm';
+import jwt, { decode } from 'jsonwebtoken';
 import { UserRepository } from '../repositories/UserRepository';
 
 async function decoder(request: Request, response: Response) {
     const token = <string>request.headers.authorization;
     let id: string;
 
-    jwt.verify(token, process.env.SECRET, async function(err, decoded) {
+    jwt.verify(token, process.env.JWT_SECRET || 'change_me_in_production', async function(err, decoded) {
         if (err) {
             return response.status(500).json({ auth: false, message: 'Failed to authenticate token.' });
         }
 
         const payload = decode(token);
         const user_id = payload.sub;
-
         id = user_id.toString();
         return user_id;
     });
 
-    const userRepository = getCustomRepository(UserRepository);
-    const user = await userRepository.findOne({id: id});
+    const userRepository = UserRepository();
+    const user = await userRepository.findOneBy({ id });
 
     return user;
 }
@@ -35,21 +31,19 @@ function is(roles: String[]) {
     ) => {
         const user = await decoder(request, response);
 
-        if(user) {
+        if (user) {
             const user_role = user.role;
-
             const index = roles.indexOf(user_role);
-    
-            if(index !== -1) {
+
+            if (index !== -1) {
                 next();
-            }
-            else {
+            } else {
                 return response.status(401).json({ message: "Not authorized!" });
-            }   
+            }
         }
     };
-    
+
     return roleAuthorized;
 }
 
-export {is};
+export { is };

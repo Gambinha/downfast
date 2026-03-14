@@ -1,5 +1,3 @@
-import {decode} from 'jsonwebtoken';
-
 class Functions {
     getToken() {
         const token = localStorage.getItem('x-access-token');
@@ -17,18 +15,18 @@ class Functions {
     }
 
     getIdByToken(token: string) {
-        const decodindToken = token as string || '';
-        const payload = decode(decodindToken);
-        if(payload) {
-            const userId = payload.sub;
-            return userId;
+        try {
+            const parts = token.split('.');
+            if (parts.length !== 3) return undefined;
+            const payload = JSON.parse(atob(parts[1]));
+            return payload.sub as string | undefined;
+        } catch {
+            return undefined;
         }
-        
-        return;
     }
 
     removeSpecialCaracteres(name: string) {
-        const er = /[\\,"”“'`|$~%'"<>{}/|]/g;
+        const er = /[\\,"""'`|$~%'"<>{}/|]/g;
         return name.replace(er, "");
     }
 

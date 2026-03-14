@@ -1,5 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./User";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation } from "typeorm";
+import type { User } from "./User";
 
 @Entity("playlists")
 class Playlist {
@@ -19,15 +19,15 @@ class Playlist {
     @Column()
     likes: number;
 
-    @Column('simple-json', {array: true})
-    videos: {name: string, url: string}[];
+    @Column('simple-json', { array: true })
+    videos: { name: string, url: string }[];
 
-    @Column('simple-array', {array: true})
-    keywords: string[]
+    @Column('simple-array', { array: true })
+    keywords: string[];
 
-    @ManyToOne(() => User, user => user.id)
-    @JoinColumn({name: 'user_id'})
-    user_id: User;
+    @ManyToOne(() => require('./User').User, (user: any) => user.id)
+    @JoinColumn({ name: 'user_id' })
+    user_id: Relation<User>;
 }
 
-export {Playlist};
+export { Playlist };

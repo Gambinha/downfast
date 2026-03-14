@@ -1,8 +1,8 @@
 import fs from 'fs';
 import handlebars from 'handlebars';
 import nodemailer, { Transporter } from 'nodemailer';
-
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 class SendMailService {
@@ -10,12 +10,12 @@ class SendMailService {
 
     constructor() {
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
+            host: process.env.MAIL_HOST || "smtp.gmail.com",
+            port: Number(process.env.MAIL_PORT) || 587,
             secure: false,
             auth: {
-                user: "downfastapp@gmail.com",
-                pass: "Downfast2021",
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS,
             },
             tls: {
                 rejectUnauthorized: false,
@@ -28,14 +28,13 @@ class SendMailService {
     async execute(to: string, variables: object, path: string) {
         const templateFileContent = fs.readFileSync(path).toString("utf-8");
         const mailTemplateParse = handlebars.compile(templateFileContent);
-
         const html = mailTemplateParse(variables);
 
-        const message = await this.client.sendMail({
+        await this.client.sendMail({
             to,
             subject: "Alteração de Senha DownFast",
             html,
-            from: "NPS <noreplay@nps.com.br>",
+            from: process.env.MAIL_FROM || "noreply@downfast.app",
         });
     }
 }

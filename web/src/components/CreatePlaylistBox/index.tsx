@@ -6,7 +6,7 @@ import * as AiIcons from 'react-icons/ai';
 import Functions from "../../functions/Functions";
 import { UserContext } from "../../contexts/userData";
 import api from "../../services/api";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 
 interface PlaylistVideosProps {
@@ -21,7 +21,7 @@ interface PlaylistVideosProps {
 
 const CreatePlaylistBox: React.FC<PlaylistVideosProps> = (props) => {
     const functions = new Functions();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const {userData, addUserData} = useContext(UserContext);
 
@@ -48,7 +48,7 @@ const CreatePlaylistBox: React.FC<PlaylistVideosProps> = (props) => {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
       }
 
     function handleCreatePlaylist() {
@@ -79,8 +79,9 @@ const CreatePlaylistBox: React.FC<PlaylistVideosProps> = (props) => {
                     props.setCreatePlaylistWindow(false);
                 }).catch((error: AxiosError) => {
                     if(error.response) {
-                        const isTokenValid = error.response.data.auth;
-                        const errorMessage = error.response.data.message;
+                        const data = error.response.data as any;
+                        const isTokenValid = data.auth;
+                        const errorMessage = data.message;
 
                         if(isTokenValid === false) {
                             handleLogout(errorMessage);

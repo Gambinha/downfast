@@ -3,29 +3,24 @@ import io from "socket.io-client";
 
 import * as AiIcons from "react-icons/ai";
 import * as BsIcons from "react-icons/bs";
-import * as HiIcons from "react-icons/hi";
 import * as GrIcons from "react-icons/gr";
+import * as HiIcons from "react-icons/hi";
 import * as MdIcons from "react-icons/md";
-
-import async from "async";
 
 import "../styles/pages/home2.css";
 
+import CreatePlaylistBox from "../components/CreatePlaylistBox";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
-import CreatePlaylistBox from "../components/CreatePlaylistBox";
 
 import Functions from "../functions/Functions";
 
 import { UserContext } from "../contexts/userData";
 
 import { AxiosError } from "axios";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import blocoNotas from "../images/Bloco_Notas.png";
-
-import dotenv from "dotenv";
-dotenv.config();
 
 export interface VideosInformations {
   name: string;
@@ -50,7 +45,7 @@ interface videosSearchProps {
 
 function Home() {
   const functions = new Functions();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [searchWarning, setSearchWarning] = useState("Teste");
   const [showSearchWarning, setShowSearchWarning] = useState(false);
@@ -68,12 +63,9 @@ function Home() {
   } = useContext(UserContext);
 
   const [videosArray, setVideosArray] = useState<VideosInformations[]>([]);
-  const [testVideosArray, setTestVideosArray] = useState<VideosInformations>();
   const [progressingVideosArray, setProgressingVideosArray] = useState<
     ProgressingVideosInformations[]
   >([]);
-  const [testProgressingVideosArray, setTestProgressingVideosArray] =
-    useState<ProgressingVideosInformations>();
 
   const [searchedVideos, setSearchedVideos] = useState<videosSearchProps[]>([]);
 
@@ -115,7 +107,7 @@ function Home() {
     });
 
     alert(message);
-    history.push("/");
+    navigate("/");
   }
 
   useEffect(() => {
@@ -133,8 +125,8 @@ function Home() {
         })
         .catch((error: AxiosError) => {
           if (error.response) {
-            const isTokenValid = error.response.data.auth;
-            const errorMessage = error.response.data.message;
+            const isTokenValid = (error.response.data as any).auth;
+            const errorMessage = (error.response.data as any).message;
 
             if (isTokenValid === false) {
               handleLogout(errorMessage);
@@ -163,7 +155,7 @@ function Home() {
             };
 
             return progressObject;
-          }
+          },
         );
 
         setVideosArray(allVideos);
@@ -176,33 +168,12 @@ function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (testVideosArray) {
-      setVideosArray([...videosArray, testVideosArray]);
-
-      addVideoData(testVideosArray);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testVideosArray]);
-
-  useEffect(() => {
-    if (testProgressingVideosArray) {
-      setProgressingVideosArray([
-        ...progressingVideosArray,
-        testProgressingVideosArray,
-      ]);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testProgressingVideosArray]);
-
   async function searchByName(name: string) {
     setShowSearchWarning(false);
 
     api
       .get(
-        `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=6&q=${name}`
+        `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=6&q=${name}`,
       )
       .then((response) => {
         const currentSearchedVideos = response.data.items.map(
@@ -215,7 +186,7 @@ function Home() {
             };
 
             return currentVideo;
-          }
+          },
         );
 
         setSearchedVideos(currentSearchedVideos);
@@ -232,97 +203,79 @@ function Home() {
     const token = functions.getToken();
     setLoading(true);
 
-    let queue = async.queue((task, callback) => {
-      //AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc
-      api
-        .get(
-          `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task} lyrics`
-        )
-        .then((response) => {
-          const searchedVideo: any = response.data.items[0];
+    console.log(names);
+    for (const task of names) {
+      try {
+        const response = await api.get(
+          `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task} lyrics`,
+        );
+        const searchedVideo: any = response.data.items[0];
 
-          if (searchedVideo) {
-            let newUrl =
-              "https://www.youtube.com/watch?v=" + searchedVideo.id.videoId;
+        if (searchedVideo) {
+          const newUrl =
+            "https://www.youtube.com/watch?v=" + searchedVideo.id.videoId;
 
-            api
-              .post(
-                "/downloads/getInfos",
-                {
-                  id: searchedVideo.id.videoId,
-                },
-                {
-                  headers: {
-                    Authorization: `${token}`,
-                  },
+          try {
+            await api.post(
+              "/downloads/getInfos",
+              { id: searchedVideo.id.videoId },
+              { headers: { Authorization: `${token}` } },
+            );
+
+            setShowSearchWarning(false);
+
+            const video = {
+              name: functions.removeSpecialCaracteres(
+                searchedVideo.snippet.title,
+              ),
+              url: newUrl,
+              embedUrl: functions.getEmbedLink(newUrl),
+            };
+            const progressingVideo = {
+              name: functions.removeSpecialCaracteres(
+                searchedVideo.snippet.title,
+              ),
+              url: newUrl,
+              embedUrl: functions.getEmbedLink(newUrl),
+              status: "waiting",
+              progress: 0,
+            };
+
+            setVideosArray((prev) => [...prev, video]);
+            setProgressingVideosArray((prev) => [...prev, progressingVideo]);
+            addVideoData(video);
+          } catch (error) {
+            const axiosError = error as AxiosError;
+            if (axiosError.response) {
+              const status = axiosError.response.status;
+              const data = axiosError.response.data as any;
+
+              if (status === 403) {
+                if (data.message === "Invalid ID") {
+                  setShowSearchWarning(true);
+                  setSearchWarning("*Insira um link válido!");
+                } else if (data.message === "Invalid Video") {
+                  setShowSearchWarning(true);
+                  setSearchWarning("*Video inválido!");
                 }
-              )
-              .then((response) => {
-                setShowSearchWarning(false);
-
-                const video = {
-                  name: functions.removeSpecialCaracteres(
-                    searchedVideo.snippet.title
-                  ),
-                  url: newUrl,
-                  embedUrl: functions.getEmbedLink(newUrl),
-                };
-                const progressingVideo = {
-                  name: functions.removeSpecialCaracteres(
-                    searchedVideo.snippet.title
-                  ),
-                  url: newUrl,
-                  embedUrl: functions.getEmbedLink(newUrl),
-                  status: "waiting",
-                  progress: 0,
-                };
-
-                setTestProgressingVideosArray(progressingVideo);
-                setTestVideosArray(video);
-
-                callback();
-              })
-              .catch((error: AxiosError) => {
-                if (error.response) {
-                  const status = error.response.status;
-                  const data = error.response.data;
-
-                  if (status === 403) {
-                    if (data.message === "Invalid ID") {
-                      setShowSearchWarning(true);
-                      setSearchWarning("*Insira um link válido!");
-                    } else if (data.message === "Invalid Video") {
-                      setShowSearchWarning(true);
-                      setSearchWarning("*Video inválido!");
-                    }
-                  } else if (status === 500) {
-                    const isTokenValid = data.auth;
-                    const errorMessage = data.message;
-
-                    if (isTokenValid === false) {
-                      handleLogout(errorMessage);
-                    }
-                  }
-                } else {
-                  console.error(error);
+              } else if (status === 500) {
+                if (data.auth === false) {
+                  handleLogout(data.message);
                 }
-              });
+              }
+            } else {
+              console.error(axiosError);
+            }
           }
-        })
-        .catch((error) => {
-          console.log(error);
-          setShowSearchWarning(true);
-          setSearchWarning("*Limite da API estourado!");
-        });
-    }, 2);
+        }
+      } catch (error) {
+        console.log(error);
+        setShowSearchWarning(true);
+        setSearchWarning("*Limite da API estourado!");
+      }
+    }
 
-    queue.drain(() => {
-      setLoading(false);
-    });
-
-    names.forEach((name) => {
-      queue.push(name);
-    });
+    setLoading(false);
   }
 
   async function addVideo(url: string) {
@@ -365,7 +318,7 @@ function Home() {
                 headers: {
                   Authorization: `${token}`,
                 },
-              }
+              },
             )
             .then((response) => {
               if (response.data === null) {
@@ -382,8 +335,8 @@ function Home() {
             })
             .catch((error: AxiosError) => {
               if (error.response) {
-                const isTokenValid = error.response.data.auth;
-                const errorMessage = error.response.data.message;
+                const isTokenValid = (error.response.data as any).auth;
+                const errorMessage = (error.response.data as any).message;
 
                 if (isTokenValid === false) {
                   handleLogout(errorMessage);
@@ -395,7 +348,7 @@ function Home() {
         } else {
           setShowSearchWarning(true);
           setSearchWarning(
-            "*Insira uma Playlist válida! Não é permitido links de MIX!"
+            "*Insira uma Playlist válida! Não é permitido links de MIX!",
           );
         }
       } else {
@@ -429,7 +382,7 @@ function Home() {
             headers: {
               Authorization: `${token}`,
             },
-          }
+          },
         )
         .then((response) => {
           const data = response.data;
@@ -451,13 +404,14 @@ function Home() {
             progress: 0,
           };
 
-          setTestProgressingVideosArray(progressingVideo);
-          setTestVideosArray(video);
+          setVideosArray((prev) => [...prev, video]);
+          setProgressingVideosArray((prev) => [...prev, progressingVideo]);
+          addVideoData(video);
         })
         .catch((error: AxiosError) => {
           if (error.response) {
             const status = error.response.status;
-            const data = error.response.data;
+            const data = error.response.data as any;
 
             if (status === 403) {
               if (data.message === "Invalid ID") {
@@ -530,15 +484,15 @@ function Home() {
             headers: {
               Authorization: `${token}`,
             },
-          }
+          },
         )
         .then((response) => {
           return;
         })
         .catch((error: AxiosError) => {
           if (error.response) {
-            const isTokenValid = error.response.data.auth;
-            const errorMessage = error.response.data.message;
+            const isTokenValid = (error.response.data as any).auth;
+            const errorMessage = (error.response.data as any).message;
 
             if (isTokenValid === false) {
               handleLogout(errorMessage);
@@ -684,7 +638,7 @@ function Home() {
               headers: {
                 Authorization: `${token}`,
               },
-            }
+            },
           )
           .then((response) => {
             alert("Videos adicionados com Sucesso!");
@@ -692,8 +646,8 @@ function Home() {
           })
           .catch((error: AxiosError) => {
             if (error.response) {
-              const isTokenValid = error.response.data.auth;
-              const errorMessage = error.response.data.message;
+              const isTokenValid = (error.response.data as any).auth;
+              const errorMessage = (error.response.data as any).message;
 
               if (isTokenValid === false) {
                 handleLogout(errorMessage);
@@ -748,9 +702,7 @@ function Home() {
             },
           })
           .then((response) => {
-            console.log(response.data);
-            const fileList: Array<string> = response.data[0].split("\n");
-            console.log(fileList);
+            const fileList: Array<string> = response.data;
 
             let fileUrls: string[] = [];
             let fileNames: string[] = [];
@@ -762,7 +714,7 @@ function Home() {
                 file.includes("https://youtu.be/")
               ) {
                 fileUrls.push(file);
-              } else if (file.length <= 70 && file !== "") {
+              } else if (file !== "") {
                 fileNames.push(file);
               } else {
                 fileNothing.push(file);
@@ -781,9 +733,9 @@ function Home() {
           })
           .catch((error: AxiosError) => {
             if (error.response) {
-              if (error.response.data.auth) {
-                const isTokenValid = error.response.data.auth;
-                const errorMessage = error.response.data.message;
+              if ((error.response.data as any).auth) {
+                const isTokenValid = (error.response.data as any).auth;
+                const errorMessage = (error.response.data as any).message;
 
                 if (isTokenValid === false) {
                   handleLogout(errorMessage);

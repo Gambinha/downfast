@@ -1,4 +1,4 @@
-import {createContext, FC, useEffect, useState} from 'react';
+import {createContext, FC, ReactNode, useEffect, useState} from 'react';
 
 interface UserProps {
     id: string,
@@ -71,7 +71,7 @@ export const userContextDefaultValueProps: userContextProps = {
 
 export const UserContext = createContext<userContextProps>( userContextDefaultValueProps );
 
-export const UserProvider: FC = ({ children }) => {
+export const UserProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [userData, setUserData] = useState<UserProps>(userContextDefaultValueProps.userData);
     const [playlistData, setPlaylistData] = useState<PlaylistProps[]>(userContextDefaultValueProps.playlistData);
     const [videosData, setVideosData] = useState<PlaylistVideosProps[]>([]);

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
@@ -19,7 +19,7 @@ interface NabvarProps {
 }
 
 const Navbar: React.FC<NabvarProps> = (props) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [sidebar, setSidebar] = useState(false);
   
@@ -42,7 +42,7 @@ const Navbar: React.FC<NabvarProps> = (props) => {
       role: ''
     })
 
-    history.push('/');
+    navigate('/');
   }
 
   return (

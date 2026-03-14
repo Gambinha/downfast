@@ -1,5 +1,5 @@
 import React, { FormEvent, useContext, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import '../styles/pages/cadastro.css';
 
@@ -40,7 +40,7 @@ const Cadastro = () => {
     const [passwordWarning, setPasswordWarning] = useState('Teste');
     const [showPasswordWarning, setShowPasswordWarning] = useState(false);
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const [name, setName] = useState('');
     const [emailCadastro, setEmailCadastro] = useState('');
@@ -74,7 +74,7 @@ const Cadastro = () => {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
       }
 
     function changeScreen() {
@@ -142,7 +142,7 @@ const Cadastro = () => {
         }).catch((error: AxiosError) => {
             setLoading(false);
             if(error.response) {
-                if(error.response.data.error === 'User already exists') {
+                if((error.response.data as any).error === 'User already exists') {
                     setShowCadastroWarning(true);
                     setCadastroWarning('*Email já cadastrado!');
                 }
@@ -197,12 +197,12 @@ const Cadastro = () => {
 
                 addPlaylistData(playlists);
                 setLoading(false);
-                history.push('/home');
+                navigate('/home');
             }).catch((error: AxiosError) => {
                 setLoading(false);
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
-                    const errorMessage = error.response.data.message;
+                    const isTokenValid = (error.response.data as any).auth;
+                    const errorMessage = (error.response.data as any).message;
 
                     if(isTokenValid === false) {
                         handleLogout(errorMessage);
@@ -215,11 +215,11 @@ const Cadastro = () => {
         }).catch((error: AxiosError) => {
             setLoading(false);
             if(error.response) {
-                if(error.response.data.error === 'User not found!') {
+                if((error.response.data as any).error === 'User not found!') {
                     setShowLoginWarning(true);
                     setLoginWarning('*Email Incorreto!');
                 }
-                else if(error.response.data.error === 'Incorrect User or Password!') {
+                else if((error.response.data as any).error === 'Incorrect User or Password!') {
                     setShowLoginWarning(true);
                     setLoginWarning('*Email ou Senha Incorreta!');
                 }
@@ -238,7 +238,7 @@ const Cadastro = () => {
             setPasswordWarning('*Email enviado!');
         }).catch((error: AxiosError) => {
             if(error.response) {
-                if(error.response.data.error === 'User not found!') {
+                if((error.response.data as any).error === 'User not found!') {
                     setShowPasswordWarning(true);
                     setPasswordWarning('*Email Não Encontrado!');
                 }

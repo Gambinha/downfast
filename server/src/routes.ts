@@ -31,7 +31,7 @@ router.delete("/users/:id", is(['ROLE_USER', 'ROLE_ADMIN']), userController.dele
 router.post("/session", sessionController.create);
 
 router.post("/playlist", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.createPlaylist);
-router.put("/playlist", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.updatePlaylist);8
+router.put("/playlist", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.updatePlaylist);
 router.post("/playlist/getAll", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.showAllPlaylist);
 
 router.delete("/playlist/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.removePlaylist);

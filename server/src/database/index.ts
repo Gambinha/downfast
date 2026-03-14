@@ -1,39 +1,29 @@
-import { ConnectionOptions, createConnection } from "typeorm";
+import "reflect-metadata";
+import { DataSource } from "typeorm";
+import { Playlist } from "../models/Playlist";
+import { User } from "../models/User";
 import { CreateUsers1626457698359 } from "./migrations/1626457698359-CreateUsers";
 import { CreatePlaylist1629244485409 } from "./migrations/1629244485409-CreatePlaylist";
 
 import dotenv from "dotenv";
 dotenv.config();
 
-const rootDir = process.env.NODE_ENV === "development" ? "src" : "build";
-
-const extensionFile = process.env.NODE_ENV === "development" ? "ts" : "js";
-
-const config: ConnectionOptions = {
+export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.TYPEORM_HOST,
-  port: Number(process.env.TYPEORM_PORT),
-  username: process.env.TYPEORM_USERNAME,
-  password: process.env.TYPEORM_PASSWORD,
-  database: process.env.TYPEORM_DATABASE,
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT) || 5432,
+  username: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASS || "postgres",
+  database: process.env.DB_NAME || "downfast",
   synchronize: false,
-  entities: [rootDir + `/models/*.${extensionFile}`],
+  entities: [User, Playlist],
   migrations: [CreateUsers1626457698359, CreatePlaylist1629244485409],
   migrationsRun: true,
-  migrationsTransactionMode: "all",
   migrationsTableName: "custom_migration_table",
-  cli: {
-    migrationsDir: rootDir + `/database/migrations`,
-  },
-};
+});
 
-console.log(config);
-
-createConnection(config)
-  .then(async (response) => {
-    console.log(response);
-    console.log(response.migrations);
-    const resp = await response.runMigrations();
-    console.log(resp);
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Database connection established");
   })
-  .catch((error) => console.log(error));
+  .catch((error) => console.log("Database connection error:", error));

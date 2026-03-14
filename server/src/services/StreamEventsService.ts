@@ -2,36 +2,33 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import ffmpeg from 'fluent-ffmpeg';
 ffmpeg.setFfmpegPath(ffmpegPath);
 
+import { ChildProcess } from 'child_process';
 import {SocketInit} from "../serverSocket";
 
 import Functions from '../functions/Functions';
-import { Stream } from 'stream';
 const functions = new Functions();
 
 class StreamEventsService {
-    
-    // ytdl-core events to download normal mp4 videos
-    ytdlCoreEvents(downloadStream: Stream, socketInstance: SocketInit, sessionId: string, index: number) {
-        //Download started
-        downloadStream.once('response', () => {
-            console.log('Download Iniciado');
 
-            socketInstance.publishEvent("startDownload", ({msg: "progress", index: index}), sessionId);
+    // yt-dlp subprocess events to download mp4 videos (parse stderr progress)
+    ytdlCoreEvents(subprocess: ChildProcess, socketInstance: SocketInit, sessionId: string, index: number) {
+        socketInstance.publishEvent("startDownload", ({ msg: "progress", index }), sessionId);
+
+        subprocess.stderr?.on('data', (data: Buffer) => {
+            const match = data.toString().match(/\[download\]\s+([\d.]+)%/);
+            if (match) {
+                const percent = parseFloat(match[1]);
+                socketInstance.publishEvent("progressDownload", ({ percent: percent.toFixed(2), index }), sessionId);
+            }
         });
 
-        //Download Progress
-        downloadStream.on('progress', (chunkLength, downloaded, total) => {
-            const percent = downloaded / total;
-
-            socketInstance.publishEvent("progressDownload", ({percent: (percent * 100).toFixed(2), index: index}), sessionId);
+        subprocess.on('close', (code) => {
+            if (code === 0) {
+                socketInstance.publishEvent("finishedDownload", ({ msg: "finished", index }), sessionId);
+            } else {
+                socketInstance.publishEvent("errorInDownload", ({ msg: `yt-dlp falhou (código ${code})` }), sessionId);
+            }
         });
-        
-        //Download Finished
-        downloadStream.on('end', () => {
-            console.log('Download Finalizado');
-
-            socketInstance.publishEvent("finishedDownload", ({msg: "finished", index: index}), sessionId);
-        });    
     }
 
     // ffmpeg events to download cut mp4 videos or mp3 musics

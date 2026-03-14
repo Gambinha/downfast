@@ -12,14 +12,14 @@ import ConfirmationWindow from '../components/ConfirmationWindow';
 
 import Functions from '../functions/Functions';
 import api from '../services/api';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 const functions = new Functions();
 
 
 function Settings() {
     const {userData, addUserData} = useContext(UserContext);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const [showEdit, setShowEdit] = useState<boolean>(false);
     const [wasUpdated, setWasUpdated] = useState<boolean>(false);
@@ -61,7 +61,7 @@ function Settings() {
         })
     
         alert(message);
-        history.push('/');
+        navigate('/');
       }
 
     useEffect(() => {
@@ -93,8 +93,8 @@ function Settings() {
                         addUserData(updatedUser);
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            const isTokenValid = error.response.data.auth;
-                            const errorMessage = error.response.data.message;
+                            const isTokenValid = (error.response.data as any).auth;
+                            const errorMessage = (error.response.data as any).message;
     
                             if(isTokenValid === false) {
                                 handleLogout(errorMessage);
@@ -124,8 +124,8 @@ function Settings() {
                             handleLogout('Failed to authenticate token!');
                         }).catch((error: AxiosError) => {
                             if(error.response) {
-                                const isTokenValid = error.response.data.auth;
-                                const errorMessage = error.response.data.message;
+                                const isTokenValid = (error.response.data as any).auth;
+                                const errorMessage = (error.response.data as any).message;
         
                                 if(isTokenValid === false) {
                                     handleLogout(errorMessage);
@@ -158,15 +158,15 @@ function Settings() {
                         closePasswordPopup();
                     }).catch((error: AxiosError) => {
                         if(error.response) {
-                            if(error.response.data.auth) {
-                                const isTokenValid = error.response.data.auth;
-                                const errorMessage = error.response.data.message;
+                            if((error.response.data as any).auth) {
+                                const isTokenValid = (error.response.data as any).auth;
+                                const errorMessage = (error.response.data as any).message;
         
                                 if(isTokenValid === false) {
                                     handleLogout(errorMessage);
                                 }
                             }
-                            else if(error.response.data.error === 'Incorrect User or Password!') {
+                            else if((error.response.data as any).error === 'Incorrect User or Password!') {
                                 setShowPasswordWarning(true);
                                 setPasswordWarning('*Senha não está correta!');
                             }

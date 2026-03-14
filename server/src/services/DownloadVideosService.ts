@@ -1,22 +1,18 @@
-// const require = createRequire(import.meta.url);
-
-import ytdl from "ytdl-core";
-import ytpl from "ytpl";
-
+import youtubeDl from "youtube-dl-exec";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
-
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 ffmpeg.setFfmpegPath(ffmpegPath);
+const ffmpegDir = path.dirname(ffmpegPath);
 
 import Functions from "../functions/Functions";
-const functions = new Functions();
-
-import { StreamEventsService } from "./StreamEventsService";
-const streamEventsService = new StreamEventsService();
-
 import { SocketInit } from "../serverSocket";
+import { StreamEventsService } from "./StreamEventsService";
+
+const functions = new Functions();
+const streamEventsService = new StreamEventsService();
 
 interface videoObject {
   name: string;
@@ -32,35 +28,26 @@ interface downloadInfosObject {
 
 class DownloadVideosService {
   downloadAll(downloadInfos: downloadInfosObject) {
-    const {
-      videos, //videos list
-      format, //download format (mp3 | mp4)
-      downloadPath, //directory path to download file
-      sessionId, //sessionId for socket connection
-    } = downloadInfos;
+    const { videos, format, downloadPath, sessionId } = downloadInfos;
 
-    //Get singleton instance
     const socketInstance = SocketInit.getInstance();
 
     fs.access(downloadPath, (error) => {
       if (error) {
-        // inform front the path is invalid
         socketInstance.publishEvent(
           "noPath",
           { msg: "This is a invalid Path" },
-          sessionId
+          sessionId,
         );
       } else {
-        // inform front to show download progress
         socketInstance.publishEvent(
           "showProgress",
           { msg: "Show Progress" },
-          sessionId
+          sessionId,
         );
 
         videos.forEach((video, index) => {
-          const name = video.name.replace(/([^\w ]|_)/, "");
-
+          const name = video.name.replace(/([^\w ]|_)/g, "");
           const output = path.resolve(downloadPath, `${name}.${format}`);
 
           switch (format) {
@@ -71,10 +58,9 @@ class DownloadVideosService {
                 socketInstance,
                 sessionId,
                 index,
-                format
+                format,
               );
               break;
-
             case "mp4":
               this.downloadMP4(
                 video,
@@ -82,7 +68,7 @@ class DownloadVideosService {
                 socketInstance,
                 sessionId,
                 index,
-                format
+                format,
               );
               break;
           }
@@ -91,23 +77,22 @@ class DownloadVideosService {
     });
   }
 
-  //download mp3 files
   downloadMP3(
     music: videoObject,
     output: string,
     socketInstance: SocketInit,
     sessionId: string,
     index: number,
-    format: string
+    format: string,
   ) {
-    const downloadMusic = ytdl(music.url, {
-      quality: "highestaudio",
-      filter: "audioonly",
+    const subprocess = youtubeDl.exec(music.url, {
+      format: "bestaudio",
+      output: "-",
+      noPlaylist: true,
     });
 
-    const downloadStream = ffmpeg(downloadMusic)
+    const downloadStream = ffmpeg(subprocess.stdout)
       .toFormat(format)
-      .audioBitrate(128)
       .save(output);
 
     streamEventsService.ffmpegEvents(
@@ -115,70 +100,66 @@ class DownloadVideosService {
       socketInstance,
       sessionId,
       index,
-      format
+      format,
     );
   }
 
-  //download mp4 files
   downloadMP4(
     video: videoObject,
     output: string,
     socketInstance: SocketInit,
     sessionId: string,
     index: number,
-    format: string
+    _format: string,
   ) {
-    const downloadVideo = ytdl(video.url, {
-      filter: (format) => format.container === "mp4",
+    const subprocess = youtubeDl.exec(video.url, {
+      format: "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+      output,
+      mergeOutputFormat: "mp4",
+      ffmpegLocation: ffmpegDir,
+      noPlaylist: true,
     });
 
-    downloadVideo.pipe(fs.createWriteStream(output));
-
     streamEventsService.ytdlCoreEvents(
-      downloadVideo,
+      subprocess,
       socketInstance,
       sessionId,
-      index
+      index,
     );
   }
 
-  //get some infos of the video by the youtube url(id)
   async getInformations(id: string) {
-    let videoInfos = {
-      title: "",
-      success: false,
-    };
-
-    await ytdl
-      .getInfo(id)
-      .then((infos) => {
-        videoInfos = {
-          title: infos.videoDetails.title,
-          success: true,
-        };
-      })
-      .catch((error) => {
-        console.log("Error: ", error.message);
-
-        videoInfos = {
-          title: null,
-          success: false,
-        };
-      });
-
-    return videoInfos;
+    try {
+      const info = await youtubeDl(id, {
+        dumpSingleJson: true,
+        noPlaylist: true,
+      }) as any;
+      return { title: info.title as string, success: true };
+    } catch (error) {
+      console.error(error);
+      return { title: null, success: false };
+    }
   }
 
-  //know if it is a valid youtube playlist
   async getInformationsByPlaylist(id: string) {
-    //verifica se o id é válido
-    const isValid = ytpl.validateID(id);
-
-    if (isValid) {
-      const playlist = await ytpl(id);
-
-      return playlist;
-    } else return null;
+    try {
+      const playlist = await youtubeDl(
+        `https://www.youtube.com/playlist?list=${id}`,
+        {
+          dumpSingleJson: true,
+          flatPlaylist: true,
+          yesPlaylist: true,
+        },
+      ) as any;
+      return {
+        items: playlist.entries.map((e: any) => ({
+          shortUrl: e.url || e.webpage_url,
+        })),
+      };
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 }
 

@@ -10,11 +10,7 @@ import { AxiosError } from 'axios';
 
 import '../styles/pages/studio.css';
 
-interface StudioProps {
-    videos: VideosInformations[]
-}
-
-const Studio: React.FC<StudioProps> = (props) => {
+const Studio: React.FC = () => {
     const functions = new Functions();
 
     const [videosList, setVideosList] = useState<VideosInformations[]>([]);
@@ -32,7 +28,7 @@ const Studio: React.FC<StudioProps> = (props) => {
                 // console.log(response);
             }).catch((error: AxiosError) => {
                 if(error.response) {
-                    const isTokenValid = error.response.data.auth;
+                    const isTokenValid = (error.response.data as any).auth;
                     // const errorMessage = error.response.data.message;
 
                     if(isTokenValid === false) {

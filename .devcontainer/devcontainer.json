@@ -1,0 +1,37 @@
+{
+  "name": "DownFast",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "forwardPorts": [3000, 3333, 5432],
+  "portsAttributes": {
+    "3000": { "label": "Frontend (React)", "onAutoForward": "notify" },
+    "3333": { "label": "Backend (Express)", "onAutoForward": "notify" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  },
+
+  "postCreateCommand": "cd /workspace/server && npm install && cd /workspace/downFast_frontend && npm install",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "cweijan.vscode-postgresql-client2",
+        "eamodio.gitlens",
+        "christian-kohler.path-intellisense",
+        "mikestead.dotenv",
+        "humao.rest-client"
+      ]
+    }
+  }
+}

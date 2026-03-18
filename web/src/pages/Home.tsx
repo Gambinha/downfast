@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-// import io from "socket.io-client"
+import React, { useContext, useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
 
 import * as AiIcons from "react-icons/ai";
 import * as BsIcons from "react-icons/bs";
@@ -22,16 +22,16 @@ import { useNavigate } from "react-router-dom";
 
 import blocoNotas from "../images/Bloco_Notas.png";
 
-// import Dropzone from 'react-dropzone';
-
-interface VideosInformations {
+export interface VideosInformations {
   name: string;
   url: string;
+  embedUrl: string;
 }
 
 interface ProgressingVideosInformations {
   name: string;
   url: string;
+  embedUrl: string;
   status: string;
   progress: number;
 }
@@ -49,6 +49,8 @@ function Home() {
 
   const [searchWarning, setSearchWarning] = useState("Teste");
   const [showSearchWarning, setShowSearchWarning] = useState(false);
+  const [downloadWarning, setDownloadWarning] = useState("Teste");
+  const [showDownloadWarning, setShowDownloadWarning] = useState(false);
 
   const {
     userData,
@@ -64,6 +66,9 @@ function Home() {
   const [progressingVideosArray, setProgressingVideosArray] = useState<
     ProgressingVideosInformations[]
   >([]);
+  const progressRef = useRef<ProgressingVideosInformations[]>([]);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const flushScheduledRef = useRef(false);
 
   const [searchedVideos, setSearchedVideos] = useState<videosSearchProps[]>([]);
 
@@ -75,22 +80,19 @@ function Home() {
 
   const [videoLink, setVideoLink] = useState("");
   const [videoFormat, setVideoFormat] = useState("mp4");
-  // const [videoPath, setVideoPath] = useState('');
+  const [videoPath, setVideoPath] = useState("");
 
   const [showCreatePlaylist, setShowCreatePlaylist] = useState<boolean>(false);
   const [showupdatePlaylist, setShowUpdatePlaylist] = useState<boolean>(false);
   const [showProgress, setShowProgress] = useState<boolean>(false);
   const [showSearchedVideos, setshowSearchedVideos] = useState<boolean>(false);
   const [showHelpPopup, setShowHelpPopup] = useState(false);
-
   const input_link = React.createRef<HTMLInputElement>();
 
   const [file, setFile] = useState<File>();
 
   //Inserir link(true) ou arquivo(false)
   const [setVideos, setSetVideos] = useState<boolean>(true);
-
-  const [licensed, setLicensed] = useState<boolean>(true);
 
   const [loading, setLoading] = useState(false);
 
@@ -169,7 +171,20 @@ function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-async function searchByName(name: string) {
+  useEffect(() => {
+    progressRef.current = progressingVideosArray;
+  }, [progressingVideosArray]);
+
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
+  async function searchByName(name: string) {
     setShowSearchWarning(false);
 
     api
@@ -203,13 +218,12 @@ async function searchByName(name: string) {
   async function addVideosByName(names: string[]) {
     const token = functions.getToken();
     setLoading(true);
-    console.log("entrou");
-    let hasUnlicensed = false;
 
+    console.log(names);
     for (const task of names) {
       try {
         const response = await api.get(
-          `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task}`,
+          `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task} lyrics`,
         );
         const searchedVideo: any = response.data.items[0];
 
@@ -218,64 +232,56 @@ async function searchByName(name: string) {
             "https://www.youtube.com/watch?v=" + searchedVideo.id.videoId;
 
           try {
-            const info = await api.get(
-              `https://youtube.googleapis.com/youtube/v3/videos?part=status,contentDetails&id=${searchedVideo.id.videoId}&key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc`,
+            await api.post(
+              "/downloads/getInfos",
+              { id: searchedVideo.id.videoId },
+              { headers: { Authorization: `${token}` } },
             );
 
-            if (info.data.items[0]) {
-              const license = info.data.items[0].status.license;
+            setShowSearchWarning(false);
 
-              if (license) {
-                try {
-                  const nameResponse = await api.post(
-                    "/downloads/getInfos",
-                    {
-                      id: searchedVideo.id.videoId,
-                      license,
-                    },
-                    {
-                      headers: { Authorization: `${token}` },
-                    },
-                  );
+            const video = {
+              name: functions.removeSpecialCaracteres(
+                searchedVideo.snippet.title,
+              ),
+              url: newUrl,
+              embedUrl: functions.getEmbedLink(newUrl),
+            };
+            const progressingVideo = {
+              name: functions.removeSpecialCaracteres(
+                searchedVideo.snippet.title,
+              ),
+              url: newUrl,
+              embedUrl: functions.getEmbedLink(newUrl),
+              status: "waiting",
+              progress: 0,
+            };
 
-                  const name = nameResponse.data;
+            setVideosArray((prev) => [...prev, video]);
+            setProgressingVideosArray((prev) => [...prev, progressingVideo]);
+            addVideoData(video);
+          } catch (error) {
+            const axiosError = error as AxiosError;
+            if (axiosError.response) {
+              const status = axiosError.response.status;
+              const data = axiosError.response.data as any;
 
-                  if (name === "not allowed") {
-                    setLicensed(false);
-                    hasUnlicensed = true;
-                  } else {
-                    setShowSearchWarning(false);
-
-                    const video = {
-                      name: searchedVideo.snippet.title,
-                      url: newUrl,
-                    };
-                    const progressingVideo = {
-                      name: searchedVideo.snippet.title,
-                      url: newUrl,
-                      status: "waiting",
-                      progress: 0,
-                    };
-
-                    setVideosArray((prev) => [...prev, video]);
-                    setProgressingVideosArray((prev) => [...prev, progressingVideo]);
-                    addVideoData(video);
-                  }
-                } catch (error) {
-                  const axiosError = error as AxiosError;
-                  if (axiosError.response) {
-                    const data = axiosError.response.data as any;
-                    if (data.auth === false) {
-                      handleLogout(data.message);
-                    }
-                  } else {
-                    console.error(axiosError);
-                  }
+              if (status === 403) {
+                if (data.message === "Invalid ID") {
+                  setShowSearchWarning(true);
+                  setSearchWarning("*Insira um link válido!");
+                } else if (data.message === "Invalid Video") {
+                  setShowSearchWarning(true);
+                  setSearchWarning("*Video inválido!");
+                }
+              } else if (status === 500) {
+                if (data.auth === false) {
+                  handleLogout(data.message);
                 }
               }
+            } else {
+              console.error(axiosError);
             }
-          } catch (error) {
-            console.error(error);
           }
         }
       } catch (error) {
@@ -285,16 +291,10 @@ async function searchByName(name: string) {
       }
     }
 
-    if (hasUnlicensed) {
-      setShowSearchWarning(true);
-      setSearchWarning("*Alguns vídeos não são licensiado para download!");
-    }
-
     setLoading(false);
   }
 
   async function addVideo(url: string) {
-    // let url = videoLink;
     const token = functions.getToken();
     let playlist_id;
 
@@ -324,11 +324,13 @@ async function searchByName(name: string) {
     if (token) {
       if (playlist_id) {
         if (playlist_id.length > 13) {
+          const source = url.includes("music.youtube.com") ? "music" : "youtube";
           api
             .post(
               "/downloads/getInfosByPlaylist",
               {
                 playlistId: playlist_id,
+                source,
               },
               {
                 headers: {
@@ -378,7 +380,9 @@ async function searchByName(name: string) {
     let video_id: string = "";
 
     if (url.includes("https://")) {
-      if (url.includes("watch?v")) {
+      if (url.includes("music.youtube.com")) {
+        video_id = url.replace(/https?:\/\/music\.youtube\.com\/watch\?v=/, "");
+      } else if (url.includes("watch?v")) {
         video_id = url.replace("https://www.youtube.com/watch?v=", "");
       } else if (url.includes("youtu.be")) {
         video_id = url.replace("https://youtu.be/", "");
@@ -387,130 +391,72 @@ async function searchByName(name: string) {
       video_id = url.replace("www.youtube.com/watch?v=", "");
     }
 
+    // Remove extra query parameters (&list=, &si=, etc.)
+    if (video_id.includes("&")) {
+      video_id = video_id.split("&")[0];
+    }
+
     if (token) {
       api
-        .get(
-          `https://youtube.googleapis.com/youtube/v3/videos?part=status,contentDetails&id=${video_id}&key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc`,
+        .post(
+          "/downloads/getInfos",
+          {
+            id: video_id,
+          },
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          },
         )
-        .then((info) => {
-          //license (Youtube/creativeCommon)
-          if (info.data.items[0]) {
-            const license = info.data.items[0].status.license;
+        .then((response) => {
+          const data = response.data;
+          const name = data.data.title;
 
-            if (license) {
-              api
-                .post(
-                  "/downloads/getInfos",
-                  {
-                    id: video_id,
-                    license,
-                  },
-                  {
-                    headers: {
-                      Authorization: `${token}`,
-                    },
-                  },
-                )
-                .then((response) => {
-                  const name = response.data;
+          setShowSearchWarning(false);
 
-                  if (name === "false") {
-                    setShowSearchWarning(true);
-                    setSearchWarning("*Insira um link válido!");
-                  } else if (name === "not allowed") {
-                    setShowSearchWarning(true);
-                    setSearchWarning("*Vídeo não licensiado para download!");
-                  } else {
-                    setShowSearchWarning(false);
+          const video = {
+            name: functions.removeSpecialCaracteres(name),
+            url,
+            embedUrl: functions.getEmbedLink(url),
+          };
 
-                    const video = {
-                      name,
-                      url,
-                    };
+          const progressingVideo = {
+            name: functions.removeSpecialCaracteres(name),
+            url,
+            embedUrl: functions.getEmbedLink(url),
+            status: "waiting",
+            progress: 0,
+          };
 
-                    const progressingVideo = {
-                      name,
-                      url,
-                      status: "waiting",
-                      progress: 0,
-                    };
+          setVideosArray((prev) => [...prev, video]);
+          setProgressingVideosArray((prev) => [...prev, progressingVideo]);
+          addVideoData(video);
+        })
+        .catch((error: AxiosError) => {
+          if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data as any;
 
-                    setVideosArray((prev) => [...prev, video]);
-                    setProgressingVideosArray((prev) => [...prev, progressingVideo]);
-                    addVideoData(video);
-                  }
-                })
-                .catch((error: AxiosError) => {
-                  if (error.response) {
-                    const isTokenValid = (error.response.data as any).auth;
-                    const errorMessage = (error.response.data as any).message;
+            if (status === 403) {
+              if (data.message === "Invalid ID") {
+                setShowSearchWarning(true);
+                setSearchWarning("*Insira um link válido!");
+              } else if (data.message === "Invalid Video") {
+                setShowSearchWarning(true);
+                setSearchWarning("*Video inválido!");
+              }
+            } else if (status === 500) {
+              const isTokenValid = data.auth;
+              const errorMessage = data.message;
 
-                    if (isTokenValid === false) {
-                      handleLogout(errorMessage);
-                    }
-                  } else {
-                    console.error(error);
-                  }
-                });
+              if (isTokenValid === false) {
+                handleLogout(errorMessage);
+              }
             }
           } else {
-            api
-              .post(
-                "/downloads/getInfos",
-                {
-                  id: video_id,
-                  license: "nenhuma",
-                },
-                {
-                  headers: {
-                    Authorization: `${token}`,
-                  },
-                },
-              )
-              .then((response) => {
-                const name = response.data;
-
-                if (name === "false") {
-                  setShowSearchWarning(true);
-                  setSearchWarning("*Insira um link válido!");
-                } else {
-                  setShowSearchWarning(false);
-                  setSearchWarning("*Vídeo não licensiado para download!");
-
-                  const video = {
-                    name,
-                    url,
-                  };
-
-                  const progressingVideo = {
-                    name,
-                    url,
-                    status: "waiting",
-                    progress: 0,
-                  };
-
-                  setVideosArray((prev) => [...prev, video]);
-                  setProgressingVideosArray((prev) => [...prev, progressingVideo]);
-                  addVideoData(video);
-                }
-              })
-              .catch((error: AxiosError) => {
-                if (error.response) {
-                  const isTokenValid = (error.response.data as any).auth;
-                  const errorMessage = (error.response.data as any).message;
-
-                  if (isTokenValid === false) {
-                    handleLogout(errorMessage);
-                  }
-                } else {
-                  console.error(error);
-                }
-              });
+            console.error(error);
           }
-        })
-        .catch((error) => {
-          setShowSearchWarning(true);
-          setSearchWarning("*Erro no servidor, tente novamente!");
         });
     }
   }
@@ -519,14 +465,10 @@ async function searchByName(name: string) {
     linksList.forEach((link) => {
       addVideo(link);
     });
-
-    setShowSearchWarning(true);
-    setSearchWarning("*Alguns vídeos podem não ser licensiado para download!");
   }
 
   function downloadOneVideo(video: VideosInformations) {
-    // window.location.href = `http://localhost:3333/download?url=${video.url}&name=${video.name}&format=${videoFormat}`;
-    window.location.href = `https://downfastsystem.herokuapp.com/download?url=${video.url}&name=${video.name}&format=${videoFormat}`;
+    window.location.href = `http://localhost:3333/download?url=${video.url}&name=${video.name}&format=${videoFormat}`;
 
     const index = downloadedVideosArray.indexOf(video);
 
@@ -535,106 +477,136 @@ async function searchByName(name: string) {
     }
   }
 
-  // function downloadAllVideos(toDownloadVideos: VideosInformations[]) {
-  //     const thisSessionId = Math.random().toString(36).substr(2, 9);
+  async function downloadAllVideos(toDownloadVideos: VideosInformations[]) {
+    setShowDownloadWarning(false);
 
-  //     // const path = videoPath;
-  //     const token = functions.getToken();
+    const thisSessionId = Math.random().toString(36).substr(2, 9);
 
-  //     // if(path === '') {
-  //     //     //mostra pro usuário
-  //     //     alert('Você precisa definir uma pasta de destino');
-  //     //     return;
-  //     // }
+    const path = videoPath;
+    const token = functions.getToken();
 
-  //     if(token) {
-  //         setShowProgress(true);
-  //         console.log(showProgress);
+    if (path === "") {
+      //mostra pro usuário
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Insira uma pasta de destino!");
+      return;
+    }
 
-  //         //Inicia o socket
-  //         socketEvents(thisSessionId);
+    if (token) {
+      //Inicia o socket e aguarda confirmação do servidor
+      await socketEvents(thisSessionId, toDownloadVideos.length);
 
-  //         api.post(`/downloads`, {
-  //             videos: toDownloadVideos,
-  //             format: videoFormat,
-  //             // downloadPath: path,
-  //             sessionId: thisSessionId,
-  //         }, {
-  //             headers: {
-  //                 "Authorization": `${token}`
-  //             }
-  //         }).then((response) => {
-  //             return;
-  //         }).catch((error: AxiosError) => {
-  //             if(error.response) {
-  //                 const isTokenValid = (error.response.data as any).auth;
-  //                 const errorMessage = (error.response.data as any).message;
+      api
+        .post(
+          `/downloads`,
+          {
+            videos: toDownloadVideos,
+            format: videoFormat,
+            downloadPath: path,
+            sessionId: thisSessionId,
+          },
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          },
+        )
+        .then((response) => {
+          return;
+        })
+        .catch((error: AxiosError) => {
+          if (error.response) {
+            const isTokenValid = (error.response.data as any).auth;
+            const errorMessage = (error.response.data as any).message;
 
-  //                 if(isTokenValid === false) {
-  //                     handleLogout(errorMessage);
-  //                 }
-  //             }
-  //             else {
-  //                 console.error(error);
-  //             }
-  //         });
-  //     }
-  // }
+            if (isTokenValid === false) {
+              handleLogout(errorMessage);
+            }
+          } else {
+            setShowDownloadWarning(true);
+            setDownloadWarning("*Erro no Download!");
+            setShowProgress(false);
 
-  // function socketEvents(sessionId: string) {
-  //     let contStart = 0;
-  //     let contFinished = 0;
+            console.error(error);
+          }
+        });
+    }
+  }
 
-  //     const socket = io("http://localhost:3333/", { transports : ['websocket'] });
-  //     // const socket = io("https://downfastsystem.herokuapp.com/", { transports : ['websocket'] });
-  //     socket.emit('connectInit', sessionId);
+  function scheduleFlush() {
+    if (flushScheduledRef.current) return;
+    flushScheduledRef.current = true;
+    requestAnimationFrame(() => {
+      flushScheduledRef.current = false;
+      setProgressingVideosArray([...progressRef.current]);
+    });
+  }
 
-  //     socket.on('noPath', ({msg}) => {
-  //         console.log(msg);
+  function socketEvents(sessionId: string, totalVideos: number): Promise<void> {
+    return new Promise((resolve) => {
+    let contFinished = 0;
 
-  //         socket.disconnect();
-  //     })
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
 
-  //     socket.on('startDownload', ({msg, index}) => {
-  //         const progressArray = progressingVideosArray;
-  //         progressArray[index].status = msg; //progress
+    const socket = io("http://localhost:3333/", { transports: ["websocket"] });
+    socketRef.current = socket;
+    socket.emit("connectInit", sessionId, () => {
+      resolve();
+    });
 
-  //         contStart++;
-  //         setProgressingVideosArray([...progressArray]);
-  //     })
+    socket.on("showProgress", () => {
+      setShowProgress(true);
+    });
 
-  //     socket.on('progressDownload', ({percent, index}) => {
-  //         const progressArray = progressingVideosArray;
-  //         progressArray[index].progress = Math.floor(percent);
+    socket.on("noPath", () => {
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Diretório não encontrado!");
+      setShowProgress(false);
+      socket.disconnect();
+      socketRef.current = null;
+    });
 
-  //         setProgressingVideosArray([...progressArray]);
+    socket.on("startDownload", ({ index }) => {
+      progressRef.current[index].status = "progress";
+      scheduleFlush();
+    });
 
-  //         // console.log(percent + ' => ' + index);
-  //     })
+    socket.on("progressDownload", ({ percent, index }) => {
+      progressRef.current[index].progress = Math.floor(percent);
+      scheduleFlush();
+    });
 
-  //     socket.on('finishedDownload', ({msg, index}) => {
-  //         const progressArray = progressingVideosArray;
-  //         progressArray[index].status = msg; //finished
-  //         console.log('Finalizou -> ' + index);
+    socket.on("finishedDownload", ({ index }) => {
+      progressRef.current[index].status = "finished";
+      progressRef.current[index].progress = 100;
+      contFinished++;
 
-  //         contFinished++;
-  //         setProgressingVideosArray([...progressArray]);
+      if (contFinished === totalVideos) {
+        setProgressingVideosArray([...progressRef.current]);
+        setShowDownloadWarning(true);
+        setDownloadWarning("*Download Total Finalizado!");
+        socket.disconnect();
+        socketRef.current = null;
+      } else {
+        scheduleFlush();
+      }
+    });
 
-  //         if(contStart == contFinished) {
-  //             const finishVideos = progressingVideosArray;
-
-  //             finishVideos.forEach(video => {
-  //                 video.status = 'finished';
-  //                 video.progress = 100;
-  //             })
-
-  //             setProgressingVideosArray(finishVideos);
-
-  //             alert('Download Total Finalizado');
-  //             socket.disconnect();
-  //         }
-  //     })
-  // }
+    socket.on("errorInDownload", () => {
+      progressRef.current.forEach((video) => {
+        video.status = "error";
+        video.progress = 0;
+      });
+      setProgressingVideosArray([...progressRef.current]);
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Nomes de arquivos inválidos!");
+      socket.disconnect();
+      socketRef.current = null;
+    });
+    });
+  }
 
   function deleteAllVideos() {
     setVideosArray([]);
@@ -642,7 +614,7 @@ async function searchByName(name: string) {
     setDownloadedVideosArray([]);
     removeAllVideosData();
     setShowProgress(false);
-    console.log(showProgress);
+    setShowDownloadWarning(false);
   }
 
   function createPlaylist() {
@@ -756,7 +728,7 @@ async function searchByName(name: string) {
             },
           })
           .then((response) => {
-            const fileList = response.data;
+            const fileList: Array<string> = response.data;
 
             let fileUrls: string[] = [];
             let fileNames: string[] = [];
@@ -765,17 +737,18 @@ async function searchByName(name: string) {
             fileList.forEach((file: string) => {
               if (
                 file.includes("https://www.youtube.com/watch?v=") ||
+                file.includes("https://music.youtube.com/watch?v=") ||
                 file.includes("https://youtu.be/")
               ) {
                 fileUrls.push(file);
-              } else if (file.length <= 70 && file !== "") {
+              } else if (file !== "") {
                 fileNames.push(file);
               } else {
                 fileNothing.push(file);
               }
             });
 
-            if (fileNothing.length > 0) {
+            if (fileNothing.length > 1) {
               setShowSearchWarning(true);
               setSearchWarning("*Arquivo no formato Inválido!");
             } else {
@@ -1057,30 +1030,10 @@ async function searchByName(name: string) {
           )}
         </div>
 
-        {/* <Dropzone  accept="text/plain" onDropAccepted={() => {}} >    
-                        { ({getRootProps, getInputProps, isDragActive, isDragReject}) => (
-                            <div id="drop-container" 
-                                { ...getRootProps()} 
-
-                                style={ {...isDragActive === true 
-                                        ? {borderColor: "#78e5d5"} 
-                                        : {...isDragReject === true ? {borderColor: "red"} : {borderColor: "black"} } }  
-                                    }
-                                    
-
-                                >
-                                <input { ...getInputProps() } />
-
-                                Insira os arquivos aqui
-                            </div>
-                        )}
-                    </Dropzone> */}
-
         <div
           id="boxes-container"
           className={videosArray.length > 0 ? "" : "hidden"}
         >
-          {/* <div id="boxes-container"> */}
           <div id="waiting-musics">
             <div className="box-title">
               <h2>Fila de Espera ({videosArray.length})</h2>
@@ -1145,14 +1098,34 @@ async function searchByName(name: string) {
                 <option value="mp3">MP3</option>
               </select>
             </div>
-            {/* 
-                        <div id="diretory-pick">
-                            <label htmlFor="">Pasta de Destino</label>
-                            <span>(Ex.: E:\Meus_Documentos\Downloads)</span>
-                            <input type="text" placeholder='Insira o caminho' onChange={(e) => setVideoPath(e.target.value)} />
-                        </div>
 
-                        <button id="download-all-videos" onClick={() => downloadAllVideos(videosArray)}>Baixar Vídeos</button> */}
+            <div id="diretory-pick">
+              <label htmlFor="">Pasta de Destino</label>
+              <span>(Ex.: D:\Meus_Documentos\Músicas)</span>
+              <input
+                type="text"
+                placeholder="Insira o caminho"
+                onChange={(e) => setVideoPath(e.target.value)}
+              />
+            </div>
+
+            <button
+              id="download-all-videos"
+              onClick={() => downloadAllVideos(videosArray)}
+            >
+              Baixar Vídeos
+            </button>
+
+            <span
+              style={
+                showDownloadWarning
+                  ? { visibility: "visible" }
+                  : { visibility: "hidden" }
+              }
+              className="warning-download"
+            >
+              {downloadWarning}
+            </span>
           </div>
 
           <div id="downloaded-musics">
@@ -1160,48 +1133,9 @@ async function searchByName(name: string) {
               <h2>Downloads</h2>
             </div>
 
-            {/* { showProgress === true ?
-                            <div className="box-content">
-                            {progressingVideosArray.map((item, index) => {
-                                return(
-                                    <div className="box-line" key={index}>
-                                        <div className="box-line-start">
-                                            <p title={item.name} >{item.name}</p>
-                                        </div>
-
-                                        <div className="progress-bar">
-                                            <span>{`${item.progress}%`}</span>
-
-                                            <div className="total-progress-bar">
-                                                <div 
-                                                    className="current-progress-bar" 
-                                                    style={ {width: `${item.progress}%`} }
-                                                >
-                                                </div>
-                                            </div>
-
-                                            <div className="current-status">
-                                                { item.status === 'waiting'
-                                                    && <MdIcons.MdHourglassEmpty size={15} color='red' />
-                                                }
-                                                { item.status === 'finished'
-                                                    && <MdIcons.MdDone size={15} color='green' />
-                                                }
-                                                { item.status === 'progress'
-                                                    && <MdIcons.MdFileDownload size={15} color='blue' />
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            </div>
-                        :
-                            <div className="box-content"></div>
-                        } */}
-            {downloadedVideosArray ? (
+            {showProgress === true ? (
               <div className="box-content">
-                {downloadedVideosArray.map((item, index) => {
+                {progressingVideosArray.map((item, index) => {
                   return (
                     <div className="box-line" key={index}>
                       <div className="box-line-start">
@@ -1209,8 +1143,31 @@ async function searchByName(name: string) {
                       </div>
 
                       <div className="progress-bar">
+                        <span>{`${item.progress}%`}</span>
+
+                        <div className="total-progress-bar">
+                          <div
+                            className="current-progress-bar"
+                            style={{ width: `${item.progress}%` }}
+                          ></div>
+                        </div>
+
                         <div className="current-status">
-                          <MdIcons.MdDone size={15} color="green" />
+                          {item.status === "waiting" && (
+                            <MdIcons.MdHourglassEmpty size={15} color="red" />
+                          )}
+                          {item.status === "finished" && (
+                            <MdIcons.MdDone size={15} color="green" />
+                          )}
+                          {item.status === "progress" && (
+                            <MdIcons.MdFileDownload size={15} color="blue" />
+                          )}
+                          {item.status === "error" && (
+                            <AiIcons.AiOutlineExclamation
+                              size={15}
+                              color="red"
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1220,6 +1177,27 @@ async function searchByName(name: string) {
             ) : (
               <div className="box-content"></div>
             )}
+            {/* { downloadedVideosArray ?
+                            <div className="box-content">
+                            {downloadedVideosArray.map((item, index) => {
+                                return(
+                                    <div className="box-line" key={index}>
+                                        <div className="box-line-start">
+                                            <p title={item.name} >{item.name}</p>
+                                        </div>
+
+                                        <div className="progress-bar">
+                                            <div className="current-status">
+                                                <MdIcons.MdDone size={15} color='green' />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                            </div>
+                        :
+                            <div className="box-content"></div>
+                        } */}
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Cadastro from "./pages/Cadastro";
 import Feed from "./pages/Feed";
-import Home2 from "./pages/Home2";
+import Home from "./pages/Home";
 import Library from "./pages/Library";
 import Playlists from "./pages/Playlists";
 import Settings from "./pages/Settings";
@@ -17,7 +17,7 @@ function AppRoutes() {
       <UserProvider>
         <Routes>
           <Route path="/" element={<Cadastro />} />
-          <Route path="/home" element={<Home2 />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/studio" element={<Studio />} />
           <Route path="/library" element={<Library />} />
           <Route path="/feed" element={<Feed />} />

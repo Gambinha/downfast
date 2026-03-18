@@ -1,0 +1,28 @@
+.input-block{
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-block input {
+    border: none;
+    border-bottom: 1px solid black;
+    padding: 0 1rem;
+    font-size: 1.5rem;
+
+    background-color: var(--color-input-background);
+    color: black;
+
+    width: 90%;
+    height: 3.4rem;
+    margin-bottom: 20px;
+
+    outline: none;
+}
+
+.input-block input:-webkit-autofill {
+    box-shadow: 0 0 30px var(--color-input-background) inset;
+    -webkit-box-shadow: 0 0 0 30px var(--color-input-background) inset;
+}

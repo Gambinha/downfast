@@ -438,16 +438,7 @@ Downloaded-Musics */
 
 /* final */
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* teste */
-.home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar {
-    position: relative;
-    right: 4px;
+    width: 55%;
 
     display: flex;
     flex-direction: row;
@@ -522,12 +513,14 @@ Downloaded-Musics */
 
 .home-container #boxes-container #configurations {
     width: 20%;
-    height: 60%;
+    height: 90%;
 
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+
+    position: relative;
 }
 
 .home-container #boxes-container #configurations #configurations-select,
@@ -557,10 +550,6 @@ Downloaded-Musics */
     border-radius: 0.8rem;
 
     font: 700 1.4rem Archivo;
-}
-
-.home-container #boxes-container #configurations #configurations-select #format-select {
-    margin-bottom: 100px;
 }
 
 .home-container #boxes-container #configurations #diretory-pick {
@@ -616,6 +605,15 @@ Downloaded-Musics */
 
 .home-container #boxes-container #configurations button#download-all-videos:hover {
     background-color: var(--color-secondary-dark);
+}
+
+.home-container #boxes-container #configurations .warning-download {
+    position: absolute;
+    bottom: 6px;
+
+    width: 86%;
+    color: red;
+    font-size: 1.3rem;
 }
 
 /* Playlist Show Container */

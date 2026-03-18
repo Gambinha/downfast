@@ -74,10 +74,10 @@ class DownloadsController {
   }
 
   async getUrlsByPlaylistId(request: Request, response: Response) {
-    const { playlistId } = request.body;
+    const { playlistId, source } = request.body;
 
     const videosList =
-      await downloadVideosService.getInformationsByPlaylist(playlistId);
+      await downloadVideosService.getInformationsByPlaylist(playlistId, source);
 
     if (videosList !== null) {
       const videos = videosList.items.map((video) => video.shortUrl);

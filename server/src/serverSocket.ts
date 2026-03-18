@@ -13,8 +13,9 @@ export class SocketInit {
         this.socketIo.on("connection", (socket: Socket) => {
             console.log("User connected " + socket.id);
 
-            socket.on("connectInit", (sessionId) => {
+            socket.on("connectInit", (sessionId, ack) => {
                 this.sockets[sessionId] = socket.id;
+                if (typeof ack === 'function') ack();
             })
 
             socket.on("disconnect", () => {

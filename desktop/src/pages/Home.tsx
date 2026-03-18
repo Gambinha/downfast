@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
 import * as AiIcons from "react-icons/ai";
@@ -7,20 +7,22 @@ import * as GrIcons from "react-icons/gr";
 import * as HiIcons from "react-icons/hi";
 import * as MdIcons from "react-icons/md";
 
-import "../styles/pages/home2.css";
+import "../styles/pages/home.css";
 
 import CreatePlaylistBox from "../components/CreatePlaylistBox";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
 
 import Functions from "../functions/Functions";
+import { useFolderDialog } from "../hooks/useFolderDialog";
 
 import { UserContext } from "../contexts/userData";
 
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
-import blocoNotas from "../images/Bloco_Notas.png";
+import { sendNotification } from "@tauri-apps/plugin-notification";
+import { open as openUrl } from "@tauri-apps/plugin-shell";
 
 export interface VideosInformations {
   name: string;
@@ -46,6 +48,7 @@ interface videosSearchProps {
 function Home() {
   const functions = new Functions();
   const navigate = useNavigate();
+  const { pickFolder } = useFolderDialog();
 
   const [searchWarning, setSearchWarning] = useState("Teste");
   const [showSearchWarning, setShowSearchWarning] = useState(false);
@@ -66,6 +69,9 @@ function Home() {
   const [progressingVideosArray, setProgressingVideosArray] = useState<
     ProgressingVideosInformations[]
   >([]);
+  const progressRef = useRef<ProgressingVideosInformations[]>([]);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const flushScheduledRef = useRef(false);
 
   const [searchedVideos, setSearchedVideos] = useState<videosSearchProps[]>([]);
 
@@ -88,7 +94,6 @@ function Home() {
 
   const [file, setFile] = useState<File>();
 
-  //Inserir link(true) ou arquivo(false)
   const [setVideos, setSetVideos] = useState<boolean>(true);
 
   const [loading, setLoading] = useState(false);
@@ -120,9 +125,7 @@ function Home() {
             Authorization: `${token}`,
           },
         })
-        .then((response) => {
-          // console.log(response);
-        })
+        .then(() => {})
         .catch((error: AxiosError) => {
           if (error.response) {
             const isTokenValid = (error.response.data as any).auth;
@@ -145,27 +148,34 @@ function Home() {
       if (videosStorage.length > 0) {
         const allVideos = JSON.parse(videosStorage);
 
-        const progressVideos = allVideos.map(
-          (video: VideosInformations, index: number) => {
-            const progressObject = {
-              name: video.name,
-              url: video.url,
-              status: "waiting",
-              progress: 0,
-            };
-
-            return progressObject;
-          },
-        );
+        const progressVideos = allVideos.map((video: VideosInformations) => {
+          return {
+            name: video.name,
+            url: video.url,
+            status: "waiting",
+            progress: 0,
+          };
+        });
 
         setVideosArray(allVideos);
         setProgressingVideosArray(progressVideos);
-      } else {
-        // console.log('Não há vídeos');
       }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    progressRef.current = progressingVideosArray;
+  }, [progressingVideosArray]);
+
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
   }, []);
 
   async function searchByName(name: string) {
@@ -176,18 +186,12 @@ function Home() {
         `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=6&q=${name}`,
       )
       .then((response) => {
-        const currentSearchedVideos = response.data.items.map(
-          (item: any, index: number) => {
-            const currentVideo = {
-              id: item.id.videoId,
-              title: item.snippet.title,
-              channelTitle: item.snippet.channelTitle,
-              thumbnail_url: item.snippet.thumbnails.high.url,
-            };
-
-            return currentVideo;
-          },
-        );
+        const currentSearchedVideos = response.data.items.map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          channelTitle: item.snippet.channelTitle,
+          thumbnail_url: item.snippet.thumbnails.high.url,
+        }));
 
         setSearchedVideos(currentSearchedVideos);
         setshowSearchedVideos(true);
@@ -203,7 +207,6 @@ function Home() {
     const token = functions.getToken();
     setLoading(true);
 
-    console.log(names);
     for (const task of names) {
       try {
         const response = await api.get(
@@ -308,17 +311,14 @@ function Home() {
     if (token) {
       if (playlist_id) {
         if (playlist_id.length > 13) {
+          const source = url.includes("music.youtube.com")
+            ? "music"
+            : "youtube";
           api
             .post(
               "/downloads/getInfosByPlaylist",
-              {
-                playlistId: playlist_id,
-              },
-              {
-                headers: {
-                  Authorization: `${token}`,
-                },
-              },
+              { playlistId: playlist_id, source },
+              { headers: { Authorization: `${token}` } },
             )
             .then((response) => {
               if (response.data === null) {
@@ -326,11 +326,7 @@ function Home() {
                 setSearchWarning("*Não há playlist!");
               } else {
                 setShowSearchWarning(false);
-
-                const data = response.data;
-                const videos = data.videos;
-
-                addVideos(videos);
+                addVideos(response.data.videos);
               }
             })
             .catch((error: AxiosError) => {
@@ -362,7 +358,9 @@ function Home() {
     let video_id: string = "";
 
     if (url.includes("https://")) {
-      if (url.includes("watch?v")) {
+      if (url.includes("music.youtube.com")) {
+        video_id = url.replace(/https?:\/\/music\.youtube\.com\/watch\?v=/, "");
+      } else if (url.includes("watch?v")) {
         video_id = url.replace("https://www.youtube.com/watch?v=", "");
       } else if (url.includes("youtu.be")) {
         video_id = url.replace("https://youtu.be/", "");
@@ -371,18 +369,16 @@ function Home() {
       video_id = url.replace("www.youtube.com/watch?v=", "");
     }
 
+    if (video_id.includes("&")) {
+      video_id = video_id.split("&")[0];
+    }
+
     if (token) {
       api
         .post(
           "/downloads/getInfos",
-          {
-            id: video_id,
-          },
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          },
+          { id: video_id },
+          { headers: { Authorization: `${token}` } },
         )
         .then((response) => {
           const data = response.data;
@@ -395,7 +391,6 @@ function Home() {
             url,
             embedUrl: functions.getEmbedLink(url),
           };
-
           const progressingVideo = {
             name: functions.removeSpecialCaracteres(name),
             url,
@@ -422,11 +417,8 @@ function Home() {
                 setSearchWarning("*Video inválido!");
               }
             } else if (status === 500) {
-              const isTokenValid = data.auth;
-              const errorMessage = data.message;
-
-              if (isTokenValid === false) {
-                handleLogout(errorMessage);
+              if (data.auth === false) {
+                handleLogout(data.message);
               }
             }
           } else {
@@ -442,34 +434,34 @@ function Home() {
     });
   }
 
-  function downloadOneVideo(video: VideosInformations) {
-    window.location.href = `http://localhost:3333/download?url=${video.url}&name=${video.name}&format=${videoFormat}`;
+  async function downloadOneVideo(video: VideosInformations) {
+    const baseUrl = api.defaults.baseURL || "http://localhost:3333";
+    await openUrl(
+      `${baseUrl}/download?url=${video.url}&name=${video.name}&format=${videoFormat}`,
+    );
 
     const index = downloadedVideosArray.indexOf(video);
-
     if (index === -1) {
       setDownloadedVideosArray([video, ...downloadedVideosArray]);
     }
   }
 
-  function downloadAllVideos(toDownloadVideos: VideosInformations[]) {
+  async function downloadAllVideos(toDownloadVideos: VideosInformations[]) {
     setShowDownloadWarning(false);
 
-    const thisSessionId = Math.random().toString(36).substr(2, 9);
+    const thisSessionId = Math.random().toString(36).slice(2, 11);
 
     const path = videoPath;
     const token = functions.getToken();
 
     if (path === "") {
-      //mostra pro usuário
       setShowDownloadWarning(true);
       setDownloadWarning("*Insira uma pasta de destino!");
       return;
     }
 
     if (token) {
-      //Inicia o socket
-      socketEvents(thisSessionId);
+      await socketEvents(thisSessionId, toDownloadVideos.length);
 
       api
         .post(
@@ -480,15 +472,9 @@ function Home() {
             downloadPath: path,
             sessionId: thisSessionId,
           },
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          },
+          { headers: { Authorization: `${token}` } },
         )
-        .then((response) => {
-          return;
-        })
+        .then(() => {})
         .catch((error: AxiosError) => {
           if (error.response) {
             const isTokenValid = (error.response.data as any).auth;
@@ -501,84 +487,89 @@ function Home() {
             setShowDownloadWarning(true);
             setDownloadWarning("*Erro no Download!");
             setShowProgress(false);
-
             console.error(error);
           }
         });
     }
   }
 
-  function socketEvents(sessionId: string) {
-    let contStart = 0;
-    let contFinished = 0;
-
-    const socket = io("http://localhost:3333/", { transports: ["websocket"] });
-    // const socket = io("https://downfastsystem.herokuapp.com/", { transports : ['websocket'] });
-    socket.emit("connectInit", sessionId);
-
-    socket.on("showProgress", ({ msg }) => {
-      setShowProgress(true);
+  function scheduleFlush() {
+    if (flushScheduledRef.current) return;
+    flushScheduledRef.current = true;
+    requestAnimationFrame(() => {
+      flushScheduledRef.current = false;
+      setProgressingVideosArray([...progressRef.current]);
     });
+  }
 
-    socket.on("noPath", ({ msg }) => {
-      setShowDownloadWarning(true);
-      setDownloadWarning("*Diretório não encontrado!");
-      setShowProgress(false);
+  function socketEvents(sessionId: string, totalVideos: number): Promise<void> {
+    return new Promise((resolve) => {
+      let contFinished = 0;
 
-      socket.disconnect();
-    });
-
-    socket.on("startDownload", ({ msg, index }) => {
-      const progressArray = progressingVideosArray;
-      progressArray[index].status = "progress"; //progress
-
-      contStart++;
-      setProgressingVideosArray([...progressArray]);
-    });
-
-    socket.on("progressDownload", ({ percent, index }) => {
-      const progressArray = progressingVideosArray;
-      progressArray[index].progress = Math.floor(percent);
-
-      setProgressingVideosArray([...progressArray]);
-    });
-
-    socket.on("finishedDownload", ({ msg, index }) => {
-      const progressArray = progressingVideosArray;
-      progressArray[index].status = "finished"; //finished
-
-      contFinished++;
-      setProgressingVideosArray([...progressArray]);
-
-      if (contStart === contFinished) {
-        const finishVideos = progressingVideosArray;
-
-        finishVideos.forEach((video) => {
-          video.status = "finished";
-          video.progress = 100;
-        });
-
-        setProgressingVideosArray(finishVideos);
-
-        setShowDownloadWarning(true);
-        setDownloadWarning("*Download Total Finalizado!");
-
-        socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
-    });
 
-    socket.on("errorInDownload", ({ msg, error }) => {
-      const allVideos = progressingVideosArray;
-
-      allVideos.forEach((video) => {
-        video.status = "error";
-        video.progress = 0;
+      const socketUrl = api.defaults.baseURL || "http://localhost:3333";
+      const socket = io(socketUrl + "/", { transports: ["websocket"] });
+      socketRef.current = socket;
+      socket.emit("connectInit", sessionId, () => {
+        resolve();
       });
 
-      setShowDownloadWarning(true);
-      setDownloadWarning("*Nomes de arquivos inválidos!");
+      socket.on("showProgress", () => {
+        setShowProgress(true);
+      });
 
-      socket.disconnect();
+      socket.on("noPath", () => {
+        setShowDownloadWarning(true);
+        setDownloadWarning("*Diretório não encontrado!");
+        setShowProgress(false);
+        socket.disconnect();
+        socketRef.current = null;
+      });
+
+      socket.on("startDownload", ({ index }) => {
+        progressRef.current[index].status = "progress";
+        scheduleFlush();
+      });
+
+      socket.on("progressDownload", ({ percent, index }) => {
+        progressRef.current[index].progress = Math.floor(percent);
+        scheduleFlush();
+      });
+
+      socket.on("finishedDownload", ({ index }) => {
+        progressRef.current[index].status = "finished";
+        progressRef.current[index].progress = 100;
+        contFinished++;
+
+        if (contFinished === totalVideos) {
+          setProgressingVideosArray([...progressRef.current]);
+          setShowDownloadWarning(true);
+          setDownloadWarning("*Download Total Finalizado!");
+          sendNotification({
+            title: "DownFast",
+            body: "Downloads concluídos!",
+          });
+          socket.disconnect();
+          socketRef.current = null;
+        } else {
+          scheduleFlush();
+        }
+      });
+
+      socket.on("errorInDownload", () => {
+        progressRef.current.forEach((video) => {
+          video.status = "error";
+          video.progress = 0;
+        });
+        setProgressingVideosArray([...progressRef.current]);
+        setShowDownloadWarning(true);
+        setDownloadWarning("*Nomes de arquivos inválidos!");
+        socket.disconnect();
+        socketRef.current = null;
+      });
     });
   }
 
@@ -610,13 +601,6 @@ function Home() {
     const newProgressingArray = [...progressingVideosArray];
     newProgressingArray.splice(index, 1);
 
-    // const newDownloadedArray = [...downloadedVideosArray];
-    // if(newDownloadedArray[index]) {
-    //     newDownloadedArray.splice(index, 1);
-
-    //     setDownloadedVideosArray(newDownloadedArray);
-    // }
-
     setVideosArray(newArray);
     setProgressingVideosArray(newProgressingArray);
     removeOneVideoData(index);
@@ -631,16 +615,10 @@ function Home() {
         api
           .put(
             `/playlist/${userData.id}/${playlist_id}`,
-            {
-              updatedVideos: videosArray,
-            },
-            {
-              headers: {
-                Authorization: `${token}`,
-              },
-            },
+            { updatedVideos: videosArray },
+            { headers: { Authorization: `${token}` } },
           )
-          .then((response) => {
+          .then(() => {
             alert("Videos adicionados com Sucesso!");
             unshowUpdatePopup();
           })
@@ -668,7 +646,6 @@ function Home() {
       return;
     }
     const textFile = event.target.files[0];
-
     setFile(textFile);
   }
 
@@ -711,6 +688,7 @@ function Home() {
             fileList.forEach((file: string) => {
               if (
                 file.includes("https://www.youtube.com/watch?v=") ||
+                file.includes("https://music.youtube.com/watch?v=") ||
                 file.includes("https://youtu.be/")
               ) {
                 fileUrls.push(file);
@@ -753,8 +731,14 @@ function Home() {
   function addSearchedVideo(video: videosSearchProps) {
     if (video) {
       const url = "https://www.youtube.com/watch?v=" + video.id;
-
       getInformations(url);
+    }
+  }
+
+  async function handlePickFolder() {
+    const folder = await pickFolder();
+    if (folder) {
+      setVideoPath(folder);
     }
   }
 
@@ -774,29 +758,19 @@ function Home() {
 
             <div id="help-informations">
               <p>
-                {" "}
                 <strong>1.</strong> O arquivo deve ser um bloco de notas;
               </p>
               <p>
-                {" "}
                 <strong>2.</strong> O site aceita tanto <strong>LINKS</strong>{" "}
                 quanto <strong>NOMES</strong> para pesquisa;
               </p>
               <p>
-                {" "}
                 <strong>3.</strong> Deve ser escrito um{" "}
                 <strong>LINK/NOME</strong> por linha;
               </p>
               <p>
-                {" "}
                 <strong>4.</strong> Não podem haver linhas em branco;
               </p>
-              <p>
-                {" "}
-                <strong>5.</strong> Exemplo na imagem abaixo:
-              </p>
-
-              <img src={blocoNotas} alt="Exemplo Bloco de Notas" />
             </div>
           </div>
         </div>
@@ -836,8 +810,7 @@ function Home() {
                       className="pick-video"
                       onClick={() => addSearchedVideo(video)}
                     >
-                      {" "}
-                      +{" "}
+                      +
                     </button>
                   </div>
                 );
@@ -898,7 +871,6 @@ function Home() {
                 }
                 onChange={(e) => setVideoLink(e.target.value)}
               />
-              {/* <button type="button" onClick={() => addVideo(videoLink)}>Enviar</button> */}
               <button
                 type="button"
                 onClick={
@@ -936,7 +908,7 @@ function Home() {
                   id="url"
                   name="search-item"
                   value="url"
-                  onClick={(e) => setUrlOrName("url")}
+                  onClick={() => setUrlOrName("url")}
                 />
                 <label htmlFor="url">Urls</label>
                 <input
@@ -944,7 +916,7 @@ function Home() {
                   id="name"
                   name="search-item"
                   value="name"
-                  onClick={(e) => setUrlOrName("name")}
+                  onClick={() => setUrlOrName("name")}
                 />
                 <label htmlFor="name">Nomes</label>
               </div>
@@ -1063,9 +1035,7 @@ function Home() {
               <select
                 name="format"
                 id="format-select"
-                onChange={(e) => {
-                  setVideoFormat(e.target.value);
-                }}
+                onChange={(e) => setVideoFormat(e.target.value)}
               >
                 <option value="mp4">MP4</option>
                 <option value="mp3">MP3</option>
@@ -1073,13 +1043,17 @@ function Home() {
             </div>
 
             <div id="diretory-pick">
-              <label htmlFor="">Pasta de Destino</label>
-              <span>(Ex.: D:\Meus_Documentos\Músicas)</span>
-              <input
-                type="text"
-                placeholder="Insira o caminho"
-                onChange={(e) => setVideoPath(e.target.value)}
-              />
+              <label>Pasta de Destino</label>
+              <span id="selected-path">
+                {videoPath || "Nenhuma pasta selecionada"}
+              </span>
+              <button
+                id="pick-folder-button"
+                type="button"
+                onClick={handlePickFolder}
+              >
+                Escolher Pasta
+              </button>
             </div>
 
             <button
@@ -1150,27 +1124,6 @@ function Home() {
             ) : (
               <div className="box-content"></div>
             )}
-            {/* { downloadedVideosArray ?
-                            <div className="box-content">
-                            {downloadedVideosArray.map((item, index) => {
-                                return(
-                                    <div className="box-line" key={index}>
-                                        <div className="box-line-start">
-                                            <p title={item.name} >{item.name}</p>
-                                        </div>
-
-                                        <div className="progress-bar">
-                                            <div className="current-status">
-                                                <MdIcons.MdDone size={15} color='green' />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            </div>
-                        :
-                            <div className="box-content"></div>
-                        } */}
           </div>
         </div>
       </div>

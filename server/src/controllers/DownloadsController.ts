@@ -80,11 +80,69 @@ class DownloadsController {
       await downloadVideosService.getInformationsByPlaylist(playlistId, source);
 
     if (videosList !== null) {
-      const videos = videosList.items.map((video) => video.shortUrl);
+      const videos = videosList.items.map((video) => video.url);
       return response.status(201).json({ videos });
     }
 
     return response.status(201).json({ videosList });
+  }
+
+  async resolveUrl(request: Request, response: Response) {
+    const { url } = request.body;
+
+    if (!url) {
+      return response
+        .status(400)
+        .json({ success: false, message: "url is required" });
+    }
+
+    try {
+      const result = await downloadVideosService.resolveUrl(url);
+      return response.status(200).json({ success: true, videos: result.videos });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      if (message === "invalid_url") {
+        return response
+          .status(400)
+          .json({ success: false, message: "URL inválida ou não reconhecida" });
+      }
+      if (message === "playlist_too_short") {
+        return response.status(400).json({
+          success: false,
+          message: "Não é permitido links de MIX!",
+        });
+      }
+      if (message === "video_not_found") {
+        return response.status(404).json({
+          success: false,
+          message: "Vídeo não encontrado ou indisponível",
+        });
+      }
+      if (message === "playlist_not_found") {
+        return response.status(404).json({
+          success: false,
+          message: "Playlist não encontrada ou indisponível",
+        });
+      }
+      return response
+        .status(500)
+        .json({ success: false, message: "Erro interno" });
+    }
+  }
+
+  async search(request: Request, response: Response) {
+    const { q, limit } = request.query;
+
+    if (!q || typeof q !== "string" || q.trim() === "") {
+      return response.status(400).json({ success: false, message: "Missing query parameter 'q'" });
+    }
+
+    const results = await downloadVideosService.searchVideos(
+      q.trim(),
+      limit ? Number(limit) : 6,
+    );
+
+    return response.json({ success: true, data: results });
   }
 
   async upload(request: Request, response: Response) {

@@ -7,11 +7,11 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 const ffmpegDir = path.dirname(ffmpegPath);
 
-import Functions from "../functions/Functions";
 import { SocketInit } from "../serverSocket";
 import { StreamEventsService } from "./StreamEventsService";
+import { VideoInfo } from "../types/VideoInfo";
+import { parseYouTubeUrl, buildEmbedUrl, sanitizeName } from "../utils/youtubeUrl";
 
-const functions = new Functions();
 const streamEventsService = new StreamEventsService();
 
 interface videoObject {
@@ -210,6 +210,32 @@ class DownloadVideosService {
     }
   }
 
+  async searchVideos(query: string, limit: number = 6) {
+    try {
+      const results = (await youtubeDl(`ytsearch${limit}:${query}`, {
+        dumpSingleJson: true,
+        noPlaylist: true,
+        flatPlaylist: true,
+      })) as any;
+
+      const entries = results.entries ?? [results];
+      return entries.map((v: any) => ({
+        id: { videoId: v.id },
+        snippet: {
+          title: v.title,
+          channelTitle: v.uploader ?? v.channel,
+          thumbnails: {
+            medium: { url: v.thumbnail },
+            high: { url: v.thumbnail },
+          },
+        },
+      }));
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
+
   async getInformationsByPlaylist(id: string, source?: string) {
     const domain = source === "music" ? "music.youtube.com" : "www.youtube.com";
     try {
@@ -223,13 +249,57 @@ class DownloadVideosService {
       )) as any;
       return {
         items: playlist.entries.map((e: any) => ({
-          shortUrl: e.url || e.webpage_url,
+          url: e.url || e.webpage_url,
+          title: e.title as string,
         })),
       };
     } catch (error) {
       console.error(error);
       return null;
     }
+  }
+
+  async resolveUrl(raw: string): Promise<{ videos: VideoInfo[] }> {
+    const parsed = parseYouTubeUrl(raw);
+
+    if (parsed.type === "video") {
+      const { videoId, canonicalUrl } = parsed;
+      const info = await this.getInformations(videoId);
+      if (!info.success || !info.title) {
+        throw new Error("video_not_found");
+      }
+      return {
+        videos: [
+          {
+            name: sanitizeName(info.title),
+            url: canonicalUrl,
+            embedUrl: buildEmbedUrl(videoId),
+          },
+        ],
+      };
+    }
+
+    // type === "playlist"
+    const { playlistId, source } = parsed;
+    const playlist = await this.getInformationsByPlaylist(playlistId, source);
+    if (!playlist) {
+      throw new Error("playlist_not_found");
+    }
+
+    const videos: VideoInfo[] = playlist.items.map(
+      (item: { url: string; title: string }) => {
+        const itemUrl = new URL(item.url);
+        const videoId =
+          itemUrl.searchParams.get("v") ?? item.url.split("/").pop() ?? "";
+        return {
+          name: sanitizeName(item.title),
+          url: item.url,
+          embedUrl: buildEmbedUrl(videoId),
+        };
+      },
+    );
+
+    return { videos };
   }
 }
 

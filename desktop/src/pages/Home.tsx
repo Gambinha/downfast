@@ -182,11 +182,9 @@ function Home() {
     setShowSearchWarning(false);
 
     api
-      .get(
-        `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=6&q=${name}`,
-      )
+      .get(`/search?q=${encodeURIComponent(name)}&limit=6`)
       .then((response) => {
-        const currentSearchedVideos = response.data.items.map((item: any) => ({
+        const currentSearchedVideos = response.data.data.map((item: any) => ({
           id: item.id.videoId,
           title: item.snippet.title,
           channelTitle: item.snippet.channelTitle,
@@ -199,7 +197,7 @@ function Home() {
       .catch((error) => {
         console.log(error);
         setShowSearchWarning(true);
-        setSearchWarning("*Limite da API estourado!");
+        setSearchWarning("*Erro ao buscar vídeos.");
       });
   }
 
@@ -210,9 +208,9 @@ function Home() {
     for (const task of names) {
       try {
         const response = await api.get(
-          `https://youtube.googleapis.com/youtube/v3/search?key=AIzaSyDYRPz8JUV6JaZtTfuv4A_zNdhAG8io3sc&type=video&part=snippet&maxResults=1&q=${task} lyrics`,
+          `/search?q=${encodeURIComponent(task + " lyrics")}&limit=1`,
         );
-        const searchedVideo: any = response.data.items[0];
+        const searchedVideo: any = response.data.data[0];
 
         if (searchedVideo) {
           const newUrl =
@@ -283,148 +281,36 @@ function Home() {
 
   async function addVideo(url: string) {
     const token = functions.getToken();
-    let playlist_id;
+    if (input_link.current) input_link.current.value = "";
+    if (!token) return;
 
-    if (input_link.current) {
-      input_link.current.value = "";
-    }
-
-    if (url.includes("list=")) {
-      if (url.includes("&")) {
-        let newUrl = url.split("&");
-
-        if (newUrl[1].includes("list=")) {
-          let playlist_header = newUrl[1].split("=");
-          playlist_id = playlist_header[1];
-        }
+    try {
+      const response = await api.post(
+        "/downloads/resolveUrl",
+        { url },
+        { headers: { Authorization: token } },
+      );
+      setShowSearchWarning(false);
+      response.data.videos.forEach((video: VideosInformations) => {
+        setVideosArray((prev) => [...prev, video]);
+        setProgressingVideosArray((prev) => [
+          ...prev,
+          { ...video, status: "waiting", progress: 0 },
+        ]);
+        addVideoData(video);
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        const { status, data } = axiosError.response;
+        setShowSearchWarning(true);
+        if (status === 400) setSearchWarning(`*${(data as any).message}`);
+        else if (status === 404) setSearchWarning(`*${(data as any).message}`);
+        else if ((data as any).auth === false)
+          handleLogout((data as any).message);
       } else {
-        let newUrl = url.split("list=");
-
-        playlist_id = newUrl[1];
+        console.error(axiosError);
       }
-    } else {
-      let newUrl = url.split("&");
-
-      url = newUrl[0];
-    }
-
-    if (token) {
-      if (playlist_id) {
-        if (playlist_id.length > 13) {
-          const source = url.includes("music.youtube.com")
-            ? "music"
-            : "youtube";
-          api
-            .post(
-              "/downloads/getInfosByPlaylist",
-              { playlistId: playlist_id, source },
-              { headers: { Authorization: `${token}` } },
-            )
-            .then((response) => {
-              if (response.data === null) {
-                setShowSearchWarning(true);
-                setSearchWarning("*Não há playlist!");
-              } else {
-                setShowSearchWarning(false);
-                addVideos(response.data.videos);
-              }
-            })
-            .catch((error: AxiosError) => {
-              if (error.response) {
-                const isTokenValid = (error.response.data as any).auth;
-                const errorMessage = (error.response.data as any).message;
-
-                if (isTokenValid === false) {
-                  handleLogout(errorMessage);
-                }
-              } else {
-                console.error(error);
-              }
-            });
-        } else {
-          setShowSearchWarning(true);
-          setSearchWarning(
-            "*Insira uma Playlist válida! Não é permitido links de MIX!",
-          );
-        }
-      } else {
-        getInformations(url);
-      }
-    }
-  }
-
-  function getInformations(url: string) {
-    const token = functions.getToken();
-    let video_id: string = "";
-
-    if (url.includes("https://")) {
-      if (url.includes("music.youtube.com")) {
-        video_id = url.replace(/https?:\/\/music\.youtube\.com\/watch\?v=/, "");
-      } else if (url.includes("watch?v")) {
-        video_id = url.replace("https://www.youtube.com/watch?v=", "");
-      } else if (url.includes("youtu.be")) {
-        video_id = url.replace("https://youtu.be/", "");
-      }
-    } else {
-      video_id = url.replace("www.youtube.com/watch?v=", "");
-    }
-
-    if (video_id.includes("&")) {
-      video_id = video_id.split("&")[0];
-    }
-
-    if (token) {
-      api
-        .post(
-          "/downloads/getInfos",
-          { id: video_id },
-          { headers: { Authorization: `${token}` } },
-        )
-        .then((response) => {
-          const data = response.data;
-          const name = data.data.title;
-
-          setShowSearchWarning(false);
-
-          const video = {
-            name: functions.removeSpecialCaracteres(name),
-            url,
-            embedUrl: functions.getEmbedLink(url),
-          };
-          const progressingVideo = {
-            name: functions.removeSpecialCaracteres(name),
-            url,
-            embedUrl: functions.getEmbedLink(url),
-            status: "waiting",
-            progress: 0,
-          };
-
-          setVideosArray((prev) => [...prev, video]);
-          setProgressingVideosArray((prev) => [...prev, progressingVideo]);
-          addVideoData(video);
-        })
-        .catch((error: AxiosError) => {
-          if (error.response) {
-            const status = error.response.status;
-            const data = error.response.data as any;
-
-            if (status === 403) {
-              if (data.message === "Invalid ID") {
-                setShowSearchWarning(true);
-                setSearchWarning("*Insira um link válido!");
-              } else if (data.message === "Invalid Video") {
-                setShowSearchWarning(true);
-                setSearchWarning("*Video inválido!");
-              }
-            } else if (status === 500) {
-              if (data.auth === false) {
-                handleLogout(data.message);
-              }
-            }
-          } else {
-            console.error(error);
-          }
-        });
     }
   }
 
@@ -731,7 +617,7 @@ function Home() {
   function addSearchedVideo(video: videosSearchProps) {
     if (video) {
       const url = "https://www.youtube.com/watch?v=" + video.id;
-      getInformations(url);
+      addVideo(url);
     }
   }
 

@@ -1,3 +1,5 @@
+/* ===== LIBRARY — Digital Kineticist Design System ===== */
+
 body.active-popup {
     overflow-y: hidden;
 }
@@ -5,24 +7,22 @@ body.active-popup {
 #library-landing {
     width: 100%;
     height: 100%;
+    background-color: var(--ds-surface);
 }
 
 .library-container {
     width: 100%;
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     z-index: 1;
 }
 
-/* SEARCH BAR */
+/* ===== Search Bar ===== */
 
 .library-container #search-bar {
     width: 80%;
     margin-top: 50px;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -31,65 +31,73 @@ body.active-popup {
 
 .library-container #search-bar h2 {
     font-size: 1.6em;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .library-container #search-bar #search-bar-inputs {
     width: 76%;
-
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-
+    align-items: center;
     margin-top: 30px;
-
     padding-bottom: 20px;
-
-    border-bottom: 2px solid #aaa;
+    border: none;
+    gap: 8px;
 }
 
 .library-container #search-bar #search-bar-inputs > input {
     flex: 4;
     height: 40px;
     font-size: 1.4rem;
-    margin: 0 2px;
-
-    padding: 0 10px;
-    border: 1px solid #aaa;
-    border-radius: 10px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    margin: 0;
+    padding: 0 14px;
+    border: none;
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .library-container #search-bar #search-bar-inputs input:focus,
 .library-container #search-bar #search-bar-inputs select:focus {
-    box-shadow: 0 0 0 0;
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.3);
     outline: 0;
+    background-color: var(--ds-surface-container-lowest);
 }
 
 .library-container #search-bar #create-playlist {
-    width: 50px;
+    width: 44px;
     height: 40px;
-    background-color: var(--color-secondary);
-    transition: background 1s;
-
-    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+    border: none;
+    border-radius: var(--ds-radius-md);
     font-weight: bold;
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
-    margin-left: 2px;
-
-    font-size: 3rem;
+    cursor: pointer;
+    font-size: 2.4rem;
+    transition: opacity 0.2s, transform 0.1s;
 }
 
 .library-container #search-bar #create-playlist:hover {
-    background-color: var(--color-secondary-dark);
+    opacity: 0.9;
 }
 
-/* PLAYLIST CONTAINER */
+.library-container #search-bar #create-playlist:active {
+    transform: scale(0.95);
+}
+
+/* ===== Playlist Cards ===== */
+
 .library-container #playlists-container {
     margin-top: 10px;
     padding-bottom: 30px;
-
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 340px;
@@ -97,35 +105,41 @@ body.active-popup {
 }
 
 .library-container #playlists-container .playlist {
-    border: 1px solid black;
-    border-radius: 10px;
+    border: none;
+    border-radius: var(--ds-radius-lg);
     height: 320px;
-
     max-width: 300px;
     min-width: 300px;
-
     margin: 0 15px;
     margin-top: 30px;
-    padding: 10px 0 0;
-
+    padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: var(--ds-surface-container-lowest);
+    box-shadow: var(--ds-shadow-ambient);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.library-container #playlists-container .playlist:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px -4px rgba(25, 28, 32, 0.1);
 }
 
 .library-container #playlists-container .playlist .playlist-title {
-    width: 90%;
-
+    width: 100%;
+    padding: 14px 16px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .library-container #playlists-container .playlist h2 {
-    font-size: 2rem;
-
+    font-size: 1.8rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
     display: block;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -133,33 +147,34 @@ body.active-popup {
 
 .library-container #playlists-container .playlist .videos-list {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 0;
     height: 120px;
-
     position: relative;
+    background-color: var(--ds-surface-container-low);
 }
 
 .library-container #playlists-container .playlist .videos-list #videos-lenght {
     position: absolute;
     text-align: center;
-
     left: 50%;
     transform: translate(-50%, 0);
     margin-left: 0;
-
     font-size: 1.2rem;
-    padding: 4px;
-
-    background-color: #f1f1f1;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    padding: 4px 12px;
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    opacity: 0.7;
+    border-radius: 8px;
 }
 
 .library-container #playlists-container .playlist .gender {
     width: 80%;
-    margin-top: 40px;
-
+    margin-top: 30px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    align-items: center;
 }
 
 .library-container #playlists-container .playlist .gender h3 {
@@ -167,81 +182,81 @@ body.active-popup {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.5rem;
+    color: var(--ds-on-surface);
+    opacity: 0.7;
 }
 
 .library-container #playlists-container .playlist .gender h3::first-letter {
     text-transform: capitalize;
 }
 
-.library-container #playlists-container .playlist button,
-#library-landing #popup #particular-keywords-box #submit-keywords {
+/* Playlist card button */
+.library-container #playlists-container .playlist > button {
     width: 100%;
     height: 50px;
-    margin-top: 30px;
-
-    border-radius: 0 0 0.8rem 0.8rem;
-
-    font: 700 2rem Archivo;
-
+    margin-top: auto;
+    border-radius: 0 0 var(--ds-radius-lg) var(--ds-radius-lg);
+    font: 700 1.6rem 'Manrope', sans-serif;
+    letter-spacing: 0.02em;
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-decoration: none;
-
-    transition: background 0.2s;
-
     color: var(--color-button-text);
-    background-color: var(--color-secondary);
-
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     cursor: pointer;
-
     border: none;
-    border-top: 1px solid black;
+    transition: opacity 0.2s;
 }
 
-.library-container #playlists-container .playlist button:hover,
-#library-landing #popup #particular-keywords-box #submit-keywords:hover {
-    background-color: var(--color-secondary-dark);
+.library-container #playlists-container .playlist > button:hover {
+    opacity: 0.9;
 }
 
+/* Box lines (video rows in cards) — no borders */
 .library-container #playlists-container .playlist .videos-list .box-line,
 #library-landing #popup #particular-videos-container .particular-box-line {
     width: 100%;
-    height: 30px;
-
+    min-height: 30px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
-    padding: .8em .4em;
-    border-top: 1px solid var(--color-primary-darker);
-    border-bottom: 1px solid var(--color-primary-darker);
+    padding: 0.7rem 0.8rem;
+    border: none;
+    transition: background-color 0.15s;
 }
 
-#library-landing #popup #particular-videos-container .particular-box-line  {
-    border-top: 0;
+.library-container #playlists-container .playlist .videos-list .box-line:hover,
+#library-landing #popup #particular-videos-container .particular-box-line:hover {
+    background-color: rgba(226, 226, 234, 0.4);
+}
+
+#library-landing #popup #particular-videos-container .particular-box-line {
+    border: none;
 }
 
 .library-container #playlists-container .playlist .videos-list .box-line p,
 #library-landing #popup #particular-videos-container .particular-box-line p {
     display: block;
     width: 250px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
     margin-left: .6em;
     font-size: .9em;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--ds-on-surface);
 }
 
+/* ===== Popup — Playlist Detail ===== */
+
 #library-landing #popup,
-#library-landing #popup #overlay{
+#library-landing #popup #overlay {
     width: 100vw;
     height: 100vh;
-
     top: 0;
     bottom: 0;
     left: 0;
@@ -250,23 +265,28 @@ body.active-popup {
 }
 
 #library-landing #popup #overlay {
-    background-color: rgba(49, 49, 49, 0.8);
+    background-color: rgba(25, 28, 32, 0.6);
+    backdrop-filter: blur(4px);
 }
 
 #library-landing #popup #close-popup {
     position: absolute;
-    top: 19px;
+    top: 16px;
     right: 16px;
-
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     justify-content: center;
     align-items: center;
-
     border-radius: 50%;
-    background-color: white;
-    border: 1px solid red;
+    background-color: var(--ds-surface-container-high);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+#library-landing #popup #close-popup:hover {
+    background-color: var(--ds-surface-container-highest);
 }
 
 #library-landing #popup #particular-playlist {
@@ -276,58 +296,61 @@ body.active-popup {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #f1f1f1;
-    padding: 14px 20px;
-    border-radius: 14px;
-
+    background-color: var(--ds-surface-bright);
+    padding: 20px 24px;
+    border-radius: var(--ds-radius-lg);
+    border: none;
+    box-shadow: var(--ds-shadow-ambient);
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 #library-landing #popup #particular-playlist > input {
-    background-color: #f1f1f1;
+    background-color: transparent;
     width: 420px;
-
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-
     font-size: 2rem;
-    font-weight: bold;
-    color: var(--color-text-base);
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    color: var(--ds-on-surface);
     border: 0;
+    padding: 8px 0;
+    border-radius: 8px;
+    transition: background-color 0.2s;
 }
 
 #library-landing #popup #particular-playlist > input:focus {
     border: 0;
     outline: 0;
     text-decoration: none;
+    background-color: var(--ds-surface-container-low);
 }
 
+/* Videos container in popup */
 #library-landing #popup #particular-videos-container {
     width: 100%;
     height: 360px;
     margin-top: 16px;
-
-    border: 1px solid black;
-    border-radius: 15px 15px 0 0;
-
+    border: none;
+    border-radius: var(--ds-radius-lg);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-shadow: var(--ds-shadow-ambient);
 }
 
 #library-landing #popup #particular-videos-container #particular-videos-box {
     width: 100%;
     flex: 14;
-    background-color: #f5f5f5;
-
+    background-color: var(--ds-surface-container-low);
     display: flex;
     flex-direction: column;
     align-items: center;
-
     overflow-y: auto;
 }
 
@@ -335,63 +358,78 @@ body.active-popup {
     display: flex;
     flex-direction: row;
     align-items: center;
-
-    width:88%;
+    width: 88%;
 }
 
 #library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-start input {
     border: 0;
     outline: 0;
-    background-color: #f7f7f7;
-
+    background-color: transparent;
     display: block;
     width: 100%;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
     margin-left: 1em;
     font-size: .9em;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--ds-on-surface);
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-start input:focus {
+    background-color: var(--ds-surface-container-lowest);
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.15);
 }
 
 #library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-end {
-    width: 20px;
-    height: 20px;
-
+    width: 24px;
+    height: 24px;
     align-items: center;
-    justify-content: right;
+    justify-content: center;
+    display: flex;
 }
 
 #library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-end button {
     border: none;
-    background-color: #f5f5f5;
+    background-color: transparent;
     font-size: 1.6rem;
-    height: 20px;
-
+    height: 24px;
     cursor: pointer;
+    padding: 2px;
+    border-radius: 6px;
+    transition: background-color 0.15s;
 }
 
+#library-landing #popup #particular-videos-container #particular-videos-box .particular-box-line .box-line-end button:hover {
+    background-color: rgba(226, 226, 234, 0.6);
+}
+
+/* Videos list header */
 #library-landing #popup #particular-videos-container #particular-videos-list-title {
     width: 100%;
-    padding: 4px 0;
+    padding: 8px 0;
     display: flex;
     justify-content: center;
     align-items: center;
-
-    border-radius: 15px 15px 0 0;
-    background-color: var(--color-primary-darker);
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     font-size: 0.8em;
     color: var(--color-title-in-primary);
 }
 
-/* Div gender-security container */
+#library-landing #popup #particular-videos-container #particular-videos-list-title h2 {
+    color: var(--color-title-in-primary);
+}
+
+/* ===== Gender & Security ===== */
 
 #library-landing #popup #particular-gender-security-box {
     width: 100%;
     height: 50px;
-    margin-top: 14px;
-
+    margin-top: 16px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -401,7 +439,6 @@ body.active-popup {
 #library-landing #popup #particular-gender-security-box #particular-gender-box,
 #library-landing #popup #particular-gender-security-box #particular-security-box {
     flex: 1;
-
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -418,79 +455,89 @@ body.active-popup {
 
 #library-landing #popup #particular-gender-security-box #particular-security-box #security-choice {
     width: 40%;
-    height: 30px;
-
+    height: 34px;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-
-    border-radius: 10px;
+    border-radius: var(--ds-radius-md);
+    overflow: hidden;
 }
 
 #library-landing #popup #particular-gender-security-box #particular-security-box #security-choice button {
     flex: 1;
     height: 100%;
-    background-color: #f1f1f1;
-
-    border: 1px solid #aaa;
-
+    background-color: var(--ds-surface-container-low);
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
 
-    border-radius: 10px;
+#library-landing #popup #particular-gender-security-box #particular-security-box #security-choice button:hover {
+    background-color: var(--ds-surface-container-high);
 }
 
 #library-landing #popup #particular-gender-security-box #particular-security-box #security-choice #private-choice {
-    border-radius: 6px 0 0 6px;
+    border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md);
 }
 
 #library-landing #popup #particular-gender-security-box #particular-security-box #security-choice #public-choice {
-    border-radius: 0 6px 6px 0;
+    border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0;
 }
 
 #library-landing #popup #particular-gender-security-box #particular-gender-box #gender-input {
     width: 56%;
-    height: 24px;
+    height: 28px;
     font-size: 1.4rem;
-
-    border: 1px solid #aaa;
-    padding: 0 6px;
-    border-radius: 10px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    border: none;
+    padding: 0 10px;
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 #library-landing #popup #particular-gender-security-box #particular-gender-box #gender-input:focus {
     outline: 0;
+    background-color: var(--ds-surface-container-lowest);
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.2);
 }
 
 #library-landing #popup #particular-gender-security-box > div > span {
-    font-size: 1.8rem;
-    color: var(--color-text-base);
+    font-size: 1.6rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    color: var(--ds-on-surface);
     margin-left: 0;
 }
 
-/* Div keyword box */
+/* ===== Keywords ===== */
 
 #library-landing #popup #particular-keywords-box {
     width: 100%;
     margin-top: 15px;
     height: 110px;
-
     padding: 4px 0;
 }
 
 #library-landing #popup #particular-keywords-box #particular-keywords-title {
-
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 }
 
+#library-landing #popup #particular-keywords-box #particular-keywords-title h3 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.5rem;
+}
+
 #library-landing #popup #particular-keywords-box form {
     width: 60%;
-
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -498,46 +545,56 @@ body.active-popup {
 
 #library-landing #popup #particular-keywords-box #input-keywords {
     width: 80%;
-    height: 30px;
+    height: 32px;
     font-size: 1.4rem;
-
-    padding: 0 10px;
-    border: 1px solid #aaa;
-    border-radius: 10px 0 0 10px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md);
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    transition: background-color 0.2s;
 }
 
 #library-landing #popup #particular-keywords-box #input-keywords:focus {
-    box-shadow: 0 0 0 0;
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.2);
     outline: 0;
+    background-color: var(--ds-surface-container-lowest);
 }
 
 #library-landing #popup #particular-keywords-box #submit-keywords {
     width: 20%;
-    height: 30px;
-    font-size: 1.4rem;
+    height: 32px;
+    font-size: 1.3rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     margin-top: 0;
-    border: 1px solid #aaa;
-    border-left: 0;
+    border: none;
     color: white;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+    border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
 
-    border-radius: 0 10px 10px 0;
+#library-landing #popup #particular-keywords-box #submit-keywords:hover {
+    opacity: 0.9;
 }
 
 #library-landing #popup #particular-keywords-container {
     width: 100%;
     height: 66px;
-    padding: 1px 2px;
+    padding: 6px 8px;
     margin-top: 10px;
     font-size: 1.2rem;
-
-    border-radius: 10px;
-
+    border-radius: var(--ds-radius-md);
     display: flex;
     flex-wrap: wrap;
-
     overflow-y: auto;
-
-    border: 1px solid #aaa;
+    border: none;
+    background-color: var(--ds-surface-container-low);
+    gap: 6px;
 }
 
 #library-landing #popup #particular-keywords-container span {
@@ -545,87 +602,101 @@ body.active-popup {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-
-    margin-left: 10px;
+    background-color: var(--ds-surface-container-high);
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--ds-on-surface);
 }
 
 #library-landing #popup #particular-keywords-container span > #remove-keyword {
-    width: 9px;
-    height: 9px;
-    margin-bottom: 10px;
-    margin-left: 2px;
-
+    width: 14px;
+    height: 14px;
+    margin-left: 6px;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-
     font-size: .8rem;
     color: white;
-
-    background-color: red;
+    background-color: #c62828;
     border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    border: none;
 }
+
+#library-landing #popup #particular-keywords-container span > #remove-keyword:hover {
+    background-color: #e53935;
+}
+
+/* ===== Action Buttons (footer) ===== */
 
 #library-landing #popup #particular-buttons-container {
     width: 100%;
     height: 44px;
-
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
-
     position: relative;
     bottom: -34px;
+    gap: 6px;
 }
 
 #library-landing #popup #particular-buttons-container > button {
     height: 100%;
-    margin: 0 4px;
-
+    margin: 0;
     color: var(--color-button-text);
-    font-size: 1.8rem;
-    font-weight: bold;
-    transition: background 0.2s;
+    font-size: 1.6rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+#library-landing #popup #particular-buttons-container > button:active {
+    transform: scale(0.98);
 }
 
 #library-landing #popup #particular-buttons-container #download-playlist {
     flex: 2;
-
-    background-color: var(--color-secondary);
-
-    border-radius: 0 0 0 10px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+    border-radius: 0 0 0 var(--ds-radius-md);
 }
 
 #library-landing #popup #particular-buttons-container #download-playlist:hover {
-    background-color: var(--color-secondary-dark);
+    opacity: 0.9;
 }
 
 #library-landing #popup #particular-buttons-container #edit-playlist {
     flex: 1;
-
-    background-color: #6e7571;
-    font-size: 1.6rem;
+    background-color: var(--ds-surface-container-high);
+    color: var(--ds-on-surface);
+    font-size: 1.4rem;
     line-height: 18px;
 }
 
 #library-landing #popup #particular-buttons-container #edit-playlist:hover {
-    background-color: #737a76;
+    background-color: var(--ds-surface-container-highest);
 }
 
 #library-landing #popup #particular-buttons-container #remove-playlist {
     flex: 1;
-
-    font-size: 1.6rem;
-    background-color: #f04a3e;
-
-    border-radius: 0 0 10px 0;
+    font-size: 1.4rem;
+    background-color: #c62828;
+    border-radius: 0 0 var(--ds-radius-md) 0;
 }
 
 #library-landing #popup #particular-buttons-container #remove-playlist:hover {
-    background-color: #c2281d;
+    opacity: 0.85;
 }
+
+/* ===== Responsive ===== */
 
 @media (max-width: 1850px) {
     .library-container #playlists-container {
@@ -635,7 +706,6 @@ body.active-popup {
     #library-landing #popup #particular-playlist {
         width: 500px;
         height: 600px;
-
         padding: 14px 20px;
     }
 
@@ -647,7 +717,6 @@ body.active-popup {
 
     #library-landing #popup #particular-buttons-container {
         height: 34px;
-
         bottom: -34px;
     }
 
@@ -660,15 +729,12 @@ body.active-popup {
         font-size: 1.2rem;
         line-height: 14px;
     }
-
 }
 
 @media (max-width: 1450px) {
     .library-container #playlists-container {
         grid-template-columns: 1fr 1fr;
-
         justify-content: space-between;
         align-items: center;
     }
-
 }

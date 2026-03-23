@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+
 :root {
   --color-background: #f0f0f7;
   --color-primary-lighter: #84b2e7;
@@ -18,6 +20,21 @@
   --color-box-base: #ffffff;
   --color-box-footer: #fafafc;
 
+  /* Design System — Tonal Architecture */
+  --ds-surface: #e9e9f2;
+  --ds-surface-container-low: #f0f0f8;
+  --ds-surface-container-lowest: #ffffff;
+  --ds-surface-container-high: #dddde8;
+  --ds-surface-container-highest: #d4d4e0;
+  --ds-surface-bright: #f6f6fc;
+  --ds-surface-variant: #c6c5d5;
+  --ds-on-surface: #191c20;
+  --ds-outline-variant: #c6c5d5;
+  --ds-secondary-fixed: #66ff8d;
+  --ds-shadow-ambient: 0 8px 28px -2px rgba(25, 28, 32, 0.10);
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 16px;
+
   font-size: 60%;
 }
 
@@ -34,7 +51,7 @@ body,
 }
 
 body {
-  background-color: var(--color-background);
+  background-color: var(--ds-surface);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -49,8 +66,13 @@ body,
 input,
 button,
 textarea {
-  font: 500 1.6rem Poppins;
-  color: var(--color-text-base);
+  font: 500 1.6rem 'Be Vietnam Pro', sans-serif;
+  color: var(--ds-on-surface);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Manrope', sans-serif;
+  color: var(--ds-on-surface);
 }
 
 @media (min-width: 700px) {

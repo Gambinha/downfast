@@ -1,239 +1,254 @@
+/* ===== HOME — Digital Kineticist Design System ===== */
+
 #home-landing {
     width: 100%;
     height: 100%;
-
-    background-color: #f5f5f5;
+    background-color: var(--ds-surface);
 }
 
 .home-container {
     width: 100%;
     height: 90%;
-
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-bottom: 100px;
-
     z-index: 1;
-
     overflow-y: scroll;
 }
 
+/* ===== Input Container ===== */
+
 .home-container #input-container {
     width: 90%;
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     margin-top: 50px;
 }
 
 .home-container #input-container h2 {
     font-size: 1.6em;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
+
+/* ===== Search Container ===== */
 
 .home-container #input-container #search-container {
     width: 55%;
     height: 55px;
     margin-top: 20px;
-
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
     position: relative;
-
     z-index: 2;
 }
 
+/* Tab-style change button */
 .home-container #input-container #search-container .change-button,
 .home-container #input-container #file-container .change-button {
     position: absolute;
-    border: 2px solid var(--color-secondary);
-    background-color: #f7f7f7;
-    color: black;
-    border-radius: 10px 10px 0 0;
+    background-color: var(--ds-surface-container-high);
+    color: var(--ds-on-surface);
+    border: none;
+    border-radius: var(--ds-radius-md) var(--ds-radius-md) 0 0;
     height: 30px;
-
-    font-size: 1.6rem;
-
+    font-size: 1.4rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     cursor: pointer;
-
     top: -28px;
     left: 10px;
-
     z-index: 5;
+    transition: background-color 0.2s;
+    padding: 0 12px;
 }
 
+.home-container #input-container #search-container .change-button:hover,
+.home-container #input-container #file-container .change-button:hover {
+    background-color: var(--ds-surface-container-highest);
+}
+
+/* URL Input */
 .home-container #input-container #search-container > input {
     width: 80%;
     height: 100%;
-
     border: none;
-    padding: 0 1rem;
+    padding: 0 1.4rem;
     font-size: 1.5rem;
-
-    background-color: var(--color-input-background);
-    color: black;
-    border-radius: 0.8rem;
-    border: 2px solid var(--color-secondary);
-
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    border-radius: var(--ds-radius-md);
     outline: none;
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
-.home-container #input-container #file-container #open-help {
-    position: absolute;
-
-    width: 20px;
-    height: 20px;
-
-    right: 180px;
-    top: -24px;
-    background-color: red;
+.home-container #input-container #search-container > input:focus {
+    background-color: var(--ds-surface-container-lowest);
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.3);
 }
 
-.home-container #input-container #file-container #open-help > #help-icon {
-    color: #f5e9e9;
-
-    transition: color 0.4s;
-}
-
-.home-container #input-container #file-container #open-help > #help-icon:hover {
-    color: #e4bbbb;
-}
-
-.home-container #input-container #search-container button {
+/* Submit button — Primary gradient */
+.home-container #input-container #search-container > button:not(.change-button) {
     width: 19%;
     height: 100%;
-
-    border-radius: 0.8rem;
-
-    font: 700 2rem Archivo;
-
+    border-radius: var(--ds-radius-md);
+    font: 700 2rem 'Manrope', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-decoration: none;
-
-    transition: background 0.2s;
-
     color: var(--color-button-text);
-    background-color: var(--color-secondary);
-
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     cursor: pointer;
-
     border: none;
+    transition: opacity 0.2s, transform 0.1s;
 }
 
+.home-container #input-container #search-container > button:not(.change-button):hover {
+    opacity: 0.9;
+}
+
+.home-container #input-container #search-container > button:not(.change-button):active {
+    transform: scale(0.98);
+}
+
+/* Help button */
+.home-container #input-container #file-container #open-help {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    right: 180px;
+    top: -28px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.home-container #input-container #file-container #open-help > #help-icon {
+    color: var(--ds-surface-variant);
+    transition: color 0.2s;
+    font-size: 20px;
+}
+
+.home-container #input-container #file-container #open-help > #help-icon:hover {
+    color: var(--color-primary);
+}
+
+/* Radio buttons */
 .home-container #input-container #search-container #search-item-radio {
     display: flex;
     flex-direction: row;
     align-items: center;
-
     position: absolute;
     top: -23px;
     right: 170px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.3rem;
 }
 
 .home-container #input-container #search-container #search-item-radio input {
     margin-left: 14px;
-    margin-right: 2px;
+    margin-right: 4px;
+    accent-color: var(--color-primary);
 }
 
-.home-container #input-container #search-container button:hover,
-.home-container #input-container #file-container .change-button:hover {
-    background-color: var(--color-secondary-dark);
+.home-container #input-container #search-container #search-item-radio label {
+    font-weight: 600;
+    color: var(--ds-on-surface);
 }
+
+/* ===== File Container ===== */
 
 .home-container #input-container #file-container {
     width: 55%;
     height: 55px;
     margin-top: 20px;
-
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
     position: relative;
-
     z-index: 2;
 }
 
 .home-container #input-container #file-container #file-label {
     width: 80%;
     height: 100%;
-
     cursor: pointer;
-
-    border: none;
+    border: 2px dashed var(--ds-surface-variant);
     padding: 0 1rem;
-    font-size: 1.5rem;
-
-    background-color: var(--color-input-background);
-    color: var(--color-secondary);
-    border-radius: 0.8rem;
-    border: 2px dashed var(--color-secondary);
-
+    font-size: 1.6rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
+    border-radius: var(--ds-radius-md);
     outline: none;
-
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem ;
-
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
-.home-container #input-container #file-container button {
+.home-container #input-container #file-container #file-label:hover {
+    background-color: var(--ds-surface-container-lowest);
+    border-color: var(--color-primary);
+}
+
+.home-container #input-container #file-container > button:not(.change-button) {
     width: 19%;
     height: 100%;
-
-    border-radius: 0.8rem;
-
-    font: 700 2rem Archivo;
-
+    border-radius: var(--ds-radius-md);
+    font: 700 2rem 'Manrope', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-decoration: none;
-
-    transition: background 0.2s;
-
     color: var(--color-button-text);
-    background-color: var(--color-secondary);
-
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     cursor: pointer;
-
     border: none;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.home-container #input-container #file-container > button:not(.change-button):hover {
+    opacity: 0.9;
 }
 
 .home-container #input-container #file-container #file-input {
     display: none;
 }
 
+/* Warning text */
 .home-container #input-container #search-container .warning-search,
 .home-container #input-container #file-container .warning-search {
     font-size: 1.3rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
     align-self: flex-start;
-    color: red;
+    color: #c62828;
     margin-left: 200px;
-
     position: absolute;
-    top: 54px;
+    top: 58px;
     left: -180px;
-
 }
+
+/* ===== Boxes Container ===== */
 
 .home-container #boxes-container {
     width: 90%;
     height: 600px;
-
     margin-top: 60px;
-
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -241,8 +256,8 @@
 }
 
 .home-container #input-container #drop-container {
-    border: 1px dashed black;
-    border-radius: 4px;
+    border: 2px dashed var(--ds-surface-variant);
+    border-radius: var(--ds-radius-md);
     cursor: pointer;
 }
 
@@ -250,161 +265,197 @@
     visibility: hidden;
 }
 
+/* ===== Queue & Downloads Cards ===== */
+
 .home-container #boxes-container #waiting-musics,
 .home-container #boxes-container #downloaded-musics {
-    border: 2px solid var(--color-primary-darker);
     width: 30%;
     height: 98%;
-    background-color: #f5f5f5;
-    border-radius: 1em;
-
+    background-color: var(--ds-surface-container-lowest);
+    border-radius: var(--ds-radius-lg);
+    border: none;
+    box-shadow: var(--ds-shadow-ambient);
     display: flex;
     flex-direction: column;
     align-items: center;
-
     margin-bottom: 30px;
+    overflow: hidden;
 }
 
-
+/* Card headers — gradient */
 .home-container #boxes-container #waiting-musics .box-title,
 .home-container #boxes-container #downloaded-musics .box-title {
     width: 100%;
     flex: 1;
-
-    border-bottom: 2px solid var(--color-primary-darker);
-    border-radius: 1em 1em 0 0;
-    background-color: var(--color-primary-darker);
-
+    border: none;
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     display: flex;
     justify-content: center;
     align-items: center;
-
     font-size: 0.8em;
     color: var(--color-title-in-primary);
 }
 
+.home-container #boxes-container #waiting-musics .box-title h2,
+.home-container #boxes-container #downloaded-musics .box-title h2 {
+    color: var(--color-title-in-primary);
+}
+
+/* Card content */
 .home-container #boxes-container #waiting-musics .box-content,
 .home-container #boxes-container #downloaded-musics .box-content {
     width: 100%;
     flex: 14;
-    background-color: #f5f5f5;
-
+    background-color: var(--ds-surface-container-low);
     display: flex;
     flex-direction: column;
-
     overflow-y: auto;
 }
 
+/* Row items — no borders, tonal separation */
 .home-container #boxes-container #waiting-musics .box-content .box-line,
 .home-container #boxes-container #downloaded-musics .box-content .box-line {
     width: 100%;
-    height: 30px;
-    background-color: #f5f5f5;
-
+    min-height: 36px;
+    background-color: transparent;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
     position: relative;
-
-    padding: .8em .4em;
-    border-bottom: 1px solid var(--color-primary-darker);
+    padding: 0.9rem 0.8rem;
+    border: none;
+    transition: background-color 0.15s;
 }
 
+.home-container #boxes-container #waiting-musics .box-content .box-line:hover,
+.home-container #boxes-container #downloaded-musics .box-content .box-line:hover {
+    background-color: rgba(226, 226, 234, 0.4);
+}
+
+/* Line start (icon + name) */
 .home-container #boxes-container #waiting-musics .box-content .box-line-start {
     display: flex;
     flex-direction: row;
     align-items: center;
-
-    width:84%;
+    width: 84%;
 }
 
 .home-container #boxes-container #waiting-musics .box-content .box-line-start input {
     border: 0;
     outline: 0;
-    background-color: #f7f7f7;
-
+    background-color: transparent;
     display: block;
     width: 96%;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
     margin-left: 1em;
     font-size: .9em;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--ds-on-surface);
+    transition: background-color 0.2s;
+    padding: 4px 8px;
+    border-radius: 8px;
 }
 
+.home-container #boxes-container #waiting-musics .box-content .box-line-start input:focus {
+    background-color: var(--ds-surface-container-lowest);
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.15);
+}
+
+/* Line end (action buttons) */
 .home-container #boxes-container #waiting-musics .box-content .box-line .box-line-end {
     flex: 2;
     width: 8%;
     height: 100%;
-
     min-width: 40px;
-
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-
     position: absolute;
-    right: 5px;
-    top: 2px;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .home-container #boxes-container #waiting-musics .box-content .box-line .box-line-end button {
     border: none;
-    background-color: #f5f5f5;
-
+    background-color: transparent;
     cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background-color 0.15s;
 }
+
+.home-container #boxes-container #waiting-musics .box-content .box-line .box-line-end button:hover {
+    background-color: rgba(226, 226, 234, 0.6);
+}
+
+/* ===== Box Buttons (footer) ===== */
 
 .home-container #boxes-container #waiting-musics #box-buttons {
     width: 100%;
     flex: 1.2;
-    border-radius: 0 0 1em 1em;
-
+    border-radius: 0 0 var(--ds-radius-lg) var(--ds-radius-lg);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-
-    background-color: yellow;
+    background-color: var(--ds-surface-container-low);
 }
 
 .home-container #boxes-container #waiting-musics #box-buttons button {
     border: none;
     font-size: 1.3rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     flex: 1;
     height: 100%;
-
     cursor: pointer;
-
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-
-    border-top: 2px solid #aaa;
-    font-weight: bold;
-    color: black;
-
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
     padding: 0 5px;
-
-    background-color: var(--color-text-in-primary);
+    transition: background-color 0.2s;
 }
 
-/*
-Downloaded-Musics */
+.home-container #boxes-container #waiting-musics #box-buttons button:hover {
+    background-color: var(--ds-surface-container-high);
+}
+
+.home-container #boxes-container #waiting-musics #box-buttons button span {
+    margin-left: 0.6em;
+}
+
+.home-container #boxes-container #waiting-musics #box-buttons button#create-playlist {
+    border-radius: 0 0 0 var(--ds-radius-lg);
+    color: var(--ds-on-surface);
+}
+
+.home-container #boxes-container #waiting-musics #box-buttons button#add-playlist {
+    border-radius: 0;
+    color: var(--ds-on-surface);
+}
+
+.home-container #boxes-container #waiting-musics #box-buttons button#remove-all-videos {
+    border-radius: 0 0 var(--ds-radius-lg) 0;
+}
+
+/* ===== Downloaded-Musics specifics ===== */
 
 .home-container #boxes-container #downloaded-musics .box-content {
-    border-radius: 0 0 1em 1em;
+    border-radius: 0 0 var(--ds-radius-lg) var(--ds-radius-lg);
 }
 
 .home-container #boxes-container #downloaded-musics .box-content .box-line .box-line-start {
     width: 80%;
-
     overflow: hidden;
 }
 
@@ -412,14 +463,15 @@ Downloaded-Musics */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
     font-size: 1.4rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
     margin-left: 6px;
+    color: var(--ds-on-surface);
 }
 
+/* Progress bar */
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar {
     width: 55%;
-
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -428,79 +480,56 @@ Downloaded-Musics */
 
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar .total-progress-bar {
     width: 80%;
-    height: 12px;
+    height: 10px;
     border-radius: 10px;
     margin-right: 10px;
-
-    border: 1px solid black;
-
+    border: none;
+    background-color: var(--ds-surface-variant);
     position: relative;
+    overflow: hidden;
 }
 
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar .total-progress-bar .current-progress-bar {
     position: absolute;
     height: 100%;
-
     border-radius: 10px;
-
-    background-color: green;
+    background-color: var(--color-secondary);
+    transition: width 0.3s ease;
 }
 
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar span {
     width: 32px;
-
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
     margin-right: 10px;
+    color: var(--ds-on-surface);
 }
 
 .home-container #boxes-container #downloaded-musics .box-content .box-line .progress-bar .current-status {
     width: 24px;
-    height: 20px;
-
+    height: 24px;
     border-radius: 50%;
-
-    border: 1px solid black;
-
+    border: none;
+    background-color: var(--ds-surface-container-high);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.home-container #boxes-container #waiting-musics #box-buttons button:hover {
-    background-color: var(--color-text-complement);
-}
-
-.home-container #boxes-container #waiting-musics #box-buttons button span {
-    margin-left: 1em;
-}
-
-.home-container #boxes-container #waiting-musics #box-buttons button#create-playlist {
-    border-radius: 0 0 0 .7em;
-    color: black;
-    border-right: 1px solid #aaa;
-}
-
-.home-container #boxes-container #waiting-musics #box-buttons button#add-playlist {
-    border-radius: 0 0 0 0;
-    color: black;
-    border-right: 1px solid #aaa;
-}
-
-.home-container #boxes-container #waiting-musics #box-buttons button#remove-all-videos {
-    border-radius: 0 0 .7em 0;
-    border-left: 1px solid #aaa;
-}
+/* ===== Configurations Panel ===== */
 
 .home-container #boxes-container #configurations {
     width: 20%;
     height: 90%;
-
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-
     position: relative;
+    background-color: var(--ds-surface-container-lowest);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: var(--ds-shadow-ambient);
+    padding: 20px 0;
 }
 
 .home-container #boxes-container #configurations #configurations-select,
@@ -508,122 +537,128 @@ Downloaded-Musics */
     width: 100%;
     display: flex;
     flex-direction: column;
-
     justify-content: center;
     align-items: center;
-
 }
 
 .home-container #boxes-container #configurations #configurations-select label,
 .home-container #boxes-container #configurations #diretory-pick label {
     text-align: left;
-    font: 700 1.6rem Archivo;
-    margin-bottom: 6px;
+    font: 700 1.6rem 'Manrope', sans-serif;
+    margin-bottom: 8px;
+    color: var(--ds-on-surface);
 }
 
 .home-container #boxes-container #configurations #configurations-select #format-select {
     width: 90%;
     height: 40px;
-
-    border: 1px solid #aaa;
-    border-radius: 0.8rem;
-
-    font: 700 1.4rem Archivo;
-}
-
-.home-container #boxes-container #configurations #diretory-pick {
-    margin-top: 40px;
-}
-
-.home-container #boxes-container #configurations #diretory-pick #selected-path {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
-    color: var(--color-text-base);
-    text-align: center;
-    word-break: break-all;
-    max-width: 90%;
-}
-
-.home-container #boxes-container #configurations #diretory-pick #pick-folder-button {
-    width: 90%;
-    height: 40px;
-    border: 1px solid black;
-    border-radius: 0.8rem;
+    border: none;
+    border-radius: var(--ds-radius-md);
+    font: 600 1.4rem 'Be Vietnam Pro', sans-serif;
+    background-color: var(--ds-surface-container-low);
+    color: var(--ds-on-surface);
     padding: 0 10px;
-    margin-top: 8px;
-
-    background-color: var(--color-primary-darker);
-    color: white;
-    font: 700 1.4rem Archivo;
-
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background-color 0.2s;
 }
 
-.home-container #boxes-container #configurations #diretory-pick #pick-folder-button:hover {
-    background-color: var(--color-primary-dark);
+.home-container #boxes-container #configurations #configurations-select #format-select:hover {
+    background-color: var(--ds-surface-container-high);
 }
 
 .home-container #boxes-container #configurations #configurations-select #format-select:active,
 .home-container #boxes-container #configurations #configurations-select #format-select:focus {
     outline: 0;
+    box-shadow: 0 0 0 2px rgba(23, 42, 146, 0.2);
 }
 
+.home-container #boxes-container #configurations #diretory-pick {
+    margin-top: 20px;
+}
+
+.home-container #boxes-container #configurations #diretory-pick #selected-path {
+    font-size: 1.2rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    margin-bottom: 6px;
+    color: var(--ds-on-surface);
+    text-align: center;
+    word-break: break-all;
+    max-width: 90%;
+    opacity: 0.7;
+}
+
+.home-container #boxes-container #configurations #diretory-pick #pick-folder-button {
+    width: 90%;
+    height: 40px;
+    border: none;
+    border-radius: var(--ds-radius-md);
+    padding: 0 10px;
+    margin-top: 8px;
+    background-color: var(--ds-surface-container-high);
+    color: var(--ds-on-surface);
+    font: 600 1.4rem 'Manrope', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.home-container #boxes-container #configurations #diretory-pick #pick-folder-button:hover {
+    background-color: var(--ds-surface-container-highest);
+}
+
+/* Download All — Primary CTA */
 .home-container #boxes-container #configurations button#download-all-videos {
     width: 90%;
     height: 50px;
-    margin-top: 60px;
-
-    border-radius: 0.8rem;
-
-    font: 700 2rem Archivo;
-
+    margin-top: 40px;
+    border-radius: var(--ds-radius-md);
+    font: 700 1.8rem 'Manrope', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-decoration: none;
-
-    transition: background 0.2s;
-
     color: var(--color-button-text);
-    background-color: var(--color-secondary);
-
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     cursor: pointer;
-
     border: none;
+    transition: opacity 0.2s, transform 0.1s;
 }
 
 .home-container #boxes-container #configurations button#download-all-videos:hover {
-    background-color: var(--color-secondary-dark);
+    opacity: 0.9;
+}
+
+.home-container #boxes-container #configurations button#download-all-videos:active {
+    transform: scale(0.98);
 }
 
 .home-container #boxes-container #configurations .warning-download {
     position: absolute;
-    bottom: 6px;
-
+    bottom: 12px;
     width: 86%;
-    color: red;
+    color: #c62828;
     font-size: 1.3rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
 }
 
-/* Playlist Show Container */
+/* ===== Popup — Playlist Selection ===== */
+
 #playlists-list-container,
-#playlists-list-container #overlay{
+#playlists-list-container #overlay {
     width: 100vw;
     height: 100vh;
-
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
     position: fixed;
-
     z-index: 10;
 }
 
 #playlists-list-container #overlay {
-    background-color: rgba(49, 49, 49, 0.8);
+    background-color: rgba(25, 28, 32, 0.6);
+    backdrop-filter: blur(4px);
 }
 
 #playlists-list-container #playlists-list-popup {
@@ -634,45 +669,46 @@ Downloaded-Musics */
     left: 50%;
     transform: translate(-50%, -50%);
     line-height: 1.4;
-    background-color: #f1f1f1;
-    padding: 20px 30px;
-    border-radius: 14px;
-    border: 1px solid black;
-
+    background-color: var(--ds-surface-bright);
+    padding: 24px 30px;
+    border-radius: var(--ds-radius-lg);
+    border: none;
+    box-shadow: var(--ds-shadow-ambient);
     display: flex;
     flex-direction: column;
     align-items: center;
-
     overflow-y: auto;
-
     z-index: 20;
 }
 
 #playlists-list-container #playlists-list-popup #playlists-list-box {
     width: 100%;
     margin-top: 24px;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 8px;
 }
 
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist {
     width: 100%;
-    margin-top: 4px;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 6px;
-
+    padding: 12px 14px;
+    border: none;
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-surface-container-low);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    transition: background-color 0.15s;
+}
+
+#playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist:hover {
+    background-color: var(--ds-surface-container-high);
 }
 
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .each-playlist-infos {
     flex: 8;
-
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -681,8 +717,8 @@ Downloaded-Musics */
 
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .each-playlist-infos > h3 {
     font-size: 1.8rem;
+    font-family: 'Manrope', sans-serif;
     width: 240px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -691,49 +727,57 @@ Downloaded-Musics */
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .each-playlist-infos > span {
     font-size: 1.4rem;
     width: 110px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--ds-on-surface);
+    opacity: 0.6;
 }
 
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .add-to-playlist-button {
     flex: 1;
-
     display: flex;
-    justify-content: right;
+    justify-content: flex-end;
     align-items: center;
 }
 
 #playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .add-to-playlist-button > button {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-
-    background-color: green;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-md);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
     color: white;
+    font-size: 1.6rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-/* Searched Videos Container */
-#home-landing  #searched-list-container,
+#playlists-list-container #playlists-list-popup #playlists-list-box .each-playlist .add-to-playlist-button > button:hover {
+    opacity: 0.85;
+}
+
+/* ===== Popup — Searched Videos ===== */
+
+#home-landing #searched-list-container,
 #searched-list-container #overlay,
 #home-landing #show-terms-popup,
-#home-landing #show-terms-popup #overlay{
+#home-landing #show-terms-popup #overlay {
     width: 100vw;
     height: 100vh;
-
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
     position: fixed;
-
     z-index: 10;
 }
 
 #home-landing #searched-list-container #overlay,
 #home-landing #show-terms-popup #overlay {
-    background-color: rgba(49, 49, 49, 0.8);
+    background-color: rgba(25, 28, 32, 0.6);
+    backdrop-filter: blur(4px);
 }
 
 #searched-list-container #searched-list-popup,
@@ -745,16 +789,15 @@ Downloaded-Musics */
     left: 50%;
     transform: translate(-50%, -50%);
     line-height: 1.4;
-    background-color: #f1f1f1;
-    padding: 20px 30px;
-    border-radius: 14px;
-    border: 1px solid black;
-
+    background-color: var(--ds-surface-bright);
+    padding: 24px 30px;
+    border-radius: var(--ds-radius-lg);
+    border: none;
+    box-shadow: var(--ds-shadow-ambient);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-
     z-index: 20;
 }
 
@@ -768,56 +811,62 @@ Downloaded-Musics */
     height: 370px;
     display: flex;
     flex-direction: column;
-
-    margin-top: 10px;
-    padding: 6px 10px;
-    border-top: 1px solid #aaa;
-    border-bottom: 1px solid #aaa;
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: none;
+    background-color: var(--ds-surface-container-low);
+    border-radius: var(--ds-radius-md);
 }
 
 #home-landing #show-terms-popup #show-help-container #help-informations p {
     width: 100%;
     text-align: justify;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 1.4rem;
+    color: var(--ds-on-surface);
 }
 
 #searched-list-container #searched-list-popup h2 {
     width: 90%;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: 'Manrope', sans-serif;
 }
 
 #searched-list-container #searched-list-popup #searched-list-box {
     width: 100%;
     margin-top: 30px;
-
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 260px;
     justify-content: space-around;
+    gap: 16px;
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search {
-    margin: 0 15px;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
     max-width: 260px;
     min-width: 260px;
     height: 220px;
-
     position: relative;
+    border-radius: var(--ds-radius-md);
+    overflow: hidden;
+    transition: transform 0.15s;
+}
+
+#searched-list-container #searched-list-popup #searched-list-box .each-search:hover {
+    transform: translateY(-2px);
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search img {
     width: 100%;
-
-    border: 3px solid black;
+    border: none;
+    border-radius: var(--ds-radius-md) var(--ds-radius-md) 0 0;
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search .search-infos {
@@ -831,77 +880,83 @@ Downloaded-Musics */
 #searched-list-container #searched-list-popup #searched-list-box .each-search .search-infos .search-infos-title {
     width: 100%;
     flex: 7;
-
     text-align: left;
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search .search-infos .search-infos-title h3 {
     width: 100%;
-    font-size: 1.5rem;
-
-    margin-top: 5px;
-
+    font-size: 1.4rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    margin-top: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--ds-on-surface);
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search .search-infos .search-infos-title span {
-    font-size: 1.3rem;
-
+    font-size: 1.2rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--ds-on-surface);
+    opacity: 0.6;
 }
 
+/* Pick video button */
 #searched-list-container #searched-list-popup #searched-list-box .each-search .pick-video {
     position: absolute;
-    top: -16px;
-    right: -6px;
-
-    width: 35px;
-    height: 35px;
-
-    border-radius: 10px;
-
-    background-color: var(--color-secondary);
-    color: #554f4f;
-    font-size: 2.5rem;
+    top: -4px;
+    right: -4px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--ds-radius-md);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+    color: white;
+    font-size: 2rem;
     font-weight: bold;
-
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
-
-    transition: .5s background;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 4px 12px rgba(6, 11, 38, 0.2);
 }
 
 #searched-list-container #searched-list-popup #searched-list-box .each-search .pick-video:hover {
-    background-color: var(--color-secondary-dark);
+    opacity: 0.9;
+    transform: scale(1.05);
 }
 
+/* Close popup button */
 #searched-list-container #searched-list-popup #close-popup {
     position: absolute;
-    top: 19px;
+    top: 16px;
     right: 16px;
-
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     justify-content: center;
     align-items: center;
-
     border-radius: 50%;
-    background-color: white;
-    border: 1px solid red;
+    background-color: var(--ds-surface-container-high);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
 }
+
+#searched-list-container #searched-list-popup #close-popup:hover {
+    background-color: var(--ds-surface-container-highest);
+}
+
+/* ===== Responsive ===== */
 
 @media (max-width: 1400px) {
     .home-container #input-container #search-container .change-button,
     .home-container #input-container #file-container .change-button {
         font-size: 1rem;
         height: 22px;
-
         top: -20px;
     }
 
@@ -915,7 +970,6 @@ Downloaded-Musics */
 
     .home-container #boxes-container #waiting-musics #box-buttons {
         flex: 1.6;
-
         flex-direction: column;
     }
 
@@ -925,10 +979,10 @@ Downloaded-Musics */
     }
 
     .home-container #boxes-container #waiting-musics #box-buttons button#create-playlist {
-        border-radius: 0 0 0 0;
+        border-radius: 0;
     }
 
     .home-container #boxes-container #waiting-musics #box-buttons button#remove-all-videos {
-        border-radius:  0 0 .7em .7em;
+        border-radius: 0 0 var(--ds-radius-lg) var(--ds-radius-lg);
     }
 }

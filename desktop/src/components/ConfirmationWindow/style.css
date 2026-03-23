@@ -1,8 +1,9 @@
+/* ===== Confirmation Window — Digital Kineticist ===== */
+
 #confirmation,
-#confirmarion #overlay{
+#confirmation #overlay {
     width: 100vw;
     height: 100vh;
-
     top: 0;
     bottom: 0;
     left: 0;
@@ -13,8 +14,8 @@
 #confirmation #overlay {
     width: 100vw;
     height: 100vh;
-    background-color: rgba(49, 49, 49, 0.8);
-
+    background-color: rgba(25, 28, 32, 0.6);
+    backdrop-filter: blur(4px);
     top: 0;
     bottom: 0;
     left: 0;
@@ -30,55 +31,61 @@
     left: 50%;
     transform: translate(-50%, -50%);
     line-height: 1.4;
-    background-color: #f1f1f1;
-    padding: 20px 30px;
-    border-radius: 14px;
-    border: 1px solid black;
-
+    background-color: var(--ds-surface-bright);
+    padding: 24px 30px;
+    border-radius: var(--ds-radius-lg);
+    border: none;
+    box-shadow: var(--ds-shadow-ambient);
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#confirmation #confirmation-container h2 {
+    font-family: 'Manrope', sans-serif;
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container {
     width: 100%;
     height: 60px;
     margin-top: 50px;
-
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
+    gap: 10px;
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container > button {
     width: 40%;
     height: 100%;
-
-    border-radius: 6px;
-
-    border: 1px solid black;
-
+    border-radius: var(--ds-radius-md);
+    border: none;
     color: white;
     font-size: 1.6rem;
-    font-weight: bold;
-    transition: background 0.2s;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+#confirmation #confirmation-container #confirmation-buttons-container > button:active {
+    transform: scale(0.97);
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container #confirm-operation {
-    border: 2px solid green;
-    background-color: var(--color-secondary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container #confirm-operation:hover {
-    background-color: var(--color-secondary-dark);
+    opacity: 0.9;
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container #cancel-operation {
-    border: 2px solid #4a0606;
-    background-color: #f04a3e;
+    background-color: #c62828;
 }
 
 #confirmation #confirmation-container #confirmation-buttons-container #cancel-operation:hover {
-    background-color: #c2281d;
+    opacity: 0.85;
 }

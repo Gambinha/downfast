@@ -16,7 +16,7 @@ const router = Router();
 const userController = new UserController();
 const sessionController = new SessionController();
 const playlistController = new PlaylistController();
-const downloadController = new DownloadsController();
+const downloadController = new DownloadsController(); // kept for upload endpoint
 const sendMailController = new SendMailController();
 
 router.post("/users", userController.create);
@@ -39,12 +39,7 @@ router.delete("/playlist/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlis
 router.get("/playlist/:user_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.showUserPlaylists);
 router.put("/playlist/:user_id/:playlist_id", is(['ROLE_USER', 'ROLE_ADMIN']), playlistController.addVideos);
 
-router.get("/search", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.search);
-router.post("/downloads", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.downloadVideosList);
-router.get("/download", downloadController.getLink);
-router.post("/downloads/getInfos", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getInformations);
-router.post("/downloads/resolveUrl", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.resolveUrl);
-router.post("/downloads/getInfosByPlaylist", is(['ROLE_USER', 'ROLE_ADMIN']), downloadController.getUrlsByPlaylistId);
+// Download/search endpoints removed — now handled by the desktop app (Tauri + yt-dlp sidecar)
 
 router.post("/upload", is(['ROLE_USER', 'ROLE_ADMIN']), multer(multerConfig).single('file'), downloadController.upload);
 

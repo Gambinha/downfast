@@ -3,13 +3,10 @@ import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import './style.css';
 
 import * as AiIcons from 'react-icons/ai';
-import Functions from "../../functions/Functions";
 import { UserContext } from "../../contexts/userData";
-import api from "../../services/api";
-import { useNavigate } from "react-router-dom";
-import { AxiosError } from "axios";
+import { createPlaylist } from "../../services/playlistService";
 
-interface PlaylistVideosProps {
+interface CreatePlaylistBoxProps {
     videos?: Array<{
         name: string;
         url: string;
@@ -19,11 +16,8 @@ interface PlaylistVideosProps {
     previousPage: string
 }
 
-const CreatePlaylistBox: React.FC<PlaylistVideosProps> = (props) => {
-    const functions = new Functions();
-    const navigate = useNavigate();
-
-    const {userData, addUserData} = useContext(UserContext);
+const CreatePlaylistBox: React.FC<CreatePlaylistBoxProps> = (props) => {
+    const {userData} = useContext(UserContext);
 
     const [keywords, setKeywords] = useState<string>('');
     const [keywordsList, setKeywordsList] = useState<string[]>([]);
@@ -34,65 +28,31 @@ const CreatePlaylistBox: React.FC<PlaylistVideosProps> = (props) => {
 
     const input_keywords = React.createRef<HTMLInputElement>();
 
-    function handleLogout(message: string){
-        localStorage.removeItem('user');
-        localStorage.removeItem('x-access-token');
-
-        addUserData({
-          id: '',
-          name: '',
-          email: '',
-          username: '',
-          likedsPlaylists: [''],
-          role: ''
-        })
-
-        alert(message);
-        navigate('/');
-      }
-
-    function handleCreatePlaylist() {
-        const token = functions.getToken();
-
-        if(token) {
-            if(title !== '' && gender !== '') {
-                api.post('/playlist', {
-                    title: title,
+    async function handleCreatePlaylist() {
+        if(title !== '' && gender !== '') {
+            try {
+                await createPlaylist({
+                    title,
                     genre: gender,
-                    security: security,
+                    security,
                     likes: 0,
                     videos: props.videos || [],
                     keywords: keywordsList,
                     user_id: userData.id
-                }, {
-                    headers: {
-                        "Authorization": `${token}`
-                    }
-                }).then(() => {
-                    alert('Playlist criada com sucesso!');
+                });
 
-                    if(props.wasUpdated) {
-                        props.wasUpdated(true);
-                    }
-                    props.setCreatePlaylistWindow(false);
-                }).catch((error: AxiosError) => {
-                    if(error.response) {
-                        const data = error.response.data as any;
-                        const isTokenValid = data.auth;
-                        const errorMessage = data.message;
+                alert('Playlist criada com sucesso!');
 
-                        if(isTokenValid === false) {
-                            handleLogout(errorMessage);
-                        }
-                    }
-                    else {
-                        console.error(error);
-                    }
-                })
+                if(props.wasUpdated) {
+                    props.wasUpdated(true);
+                }
+                props.setCreatePlaylistWindow(false);
+            } catch {
+                // Auth errors handled by interceptor
+                console.error('Erro ao criar playlist');
             }
-            else {
-                alert('Título ou Gênero Incompleto!');
-            }
+        } else {
+            alert('Título ou Gênero Incompleto!');
         }
     }
 

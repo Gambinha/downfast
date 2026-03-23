@@ -1,28 +1,7 @@
 import {createContext, FC, ReactNode, useEffect, useState} from 'react';
+import { UserProps, PlaylistProps, PlaylistVideosProps } from '../types/api';
 
-interface UserProps {
-    id: string,
-    email: string,
-    name: string,
-    username: string
-    likedsPlaylists: Array<string>;
-    role: string;
-}
-
-interface PlaylistVideosProps {
-    name: string;
-    url: string;
-}
-
-interface PlaylistProps {
-    id: string;
-    title: string;
-    genre: string;
-    likes: number;
-    security: string;
-    keywords: Array<string>;
-    videos: Array<PlaylistVideosProps>;
-}
+export type { UserProps, PlaylistProps, PlaylistVideosProps };
 
 interface userContextProps {
     userData: UserProps

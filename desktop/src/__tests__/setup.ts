@@ -21,15 +21,13 @@ vi.mock('@tauri-apps/plugin-store', () => ({
   }),
 }))
 
-// Mock socket.io-client
-vi.mock('socket.io-client', () => ({
-  default: vi.fn(() => ({
-    emit: vi.fn((event: string, _data: unknown, cb?: () => void) => {
-      if (cb) cb()
-    }),
-    on: vi.fn(),
-    disconnect: vi.fn(),
-  })),
+// Mock Tauri core APIs (invoke + events)
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn().mockResolvedValue(vi.fn()),
 }))
 
 // Mock axios

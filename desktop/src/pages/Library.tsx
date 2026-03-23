@@ -5,37 +5,25 @@ import * as BsIcons from 'react-icons/bs';
 
 import '../styles/pages/library.css';
 
-import {AxiosError} from 'axios';
-
 import Navbar from '../components/Navbar';
 import ConfirmationWindow from '../components/ConfirmationWindow';
 import CreatePlaylistBox from '../components/CreatePlaylistBox';
 
-import api from '../services/api';
-import Functions from '../functions/Functions';
+import { getIdByToken } from '../functions/Functions';
 import { UserContext } from '../contexts/userData';
 import { useNavigate } from 'react-router-dom';
 
-
-export interface PlaylistVideosProps {
-    name: string;
-    url: string;
-}
-
-export interface PlaylistProps {
-    id: string;
-    title: string;
-    genre: string;
-    likes: number;
-    security: string;
-    keywords: Array<string>;
-    videos: Array<PlaylistVideosProps>;
-}
+import {
+    getPlaylists,
+    updatePlaylist as updatePlaylistService,
+    deletePlaylist as deletePlaylistService,
+} from '../services/playlistService';
+import type { PlaylistProps, PlaylistVideosProps } from '../types/api';
 
 
 function Library() {
     const navigate = useNavigate();
-    const emptyArray = {
+    const emptyArray: PlaylistProps = {
         id: '',
         title: '',
         genre: '',
@@ -45,7 +33,7 @@ function Library() {
         videos: []
     }
 
-    const {addUserData, addPlaylistData, addVideosData, removeAllVideosData} = useContext(UserContext);
+    const {addPlaylistData, addVideosData, removeAllVideosData} = useContext(UserContext);
 
     const [playlists, setPlaylists] = useState<PlaylistProps[]>([]);
     const [filteredPlaylists, setFilteredPlaylists] = useState<PlaylistProps[]>([]);
@@ -75,8 +63,6 @@ function Library() {
 
     const [wasUpdated, setWasUpdated] = useState(false);
 
-    const functions = new Functions();
-
     const input_keywords = React.createRef<HTMLInputElement>();
 
     if(showPopup) {
@@ -85,63 +71,36 @@ function Library() {
         document.body.classList.remove('active-popup');
     }
 
-    function handleLogout(message: string){
-        localStorage.removeItem('user');
-        localStorage.removeItem('x-access-token');
-
-        addUserData({
-          id: '',
-          name: '',
-          email: '',
-          username: '',
-          likedsPlaylists: [''],
-          role: ''
-        })
-
-        alert(message);
-        navigate('/');
-    }
-
     useEffect(() => {
         handleGetPlaylists();
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (playlistName != null) {
-            let playlists_array = playlists;
-            let filtered = playlists_array.filter((playlist) => {
+            let filtered = playlists.filter((playlist) => {
               return playlist.title.toLowerCase().indexOf(playlistName.toLowerCase()) !== -1;
             });
-
             setFilteredPlaylists(filtered);
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [playlistName]);
 
     useEffect(() => {
         if (genderName != null) {
-            let playlists_array = playlists;
-            let filtered = playlists_array.filter((playlist) => {
+            let filtered = playlists.filter((playlist) => {
               return playlist.genre.toLowerCase().indexOf(genderName.toLowerCase()) !== -1;
             });
-
             setFilteredPlaylists(filtered);
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [genderName]);
 
     useEffect(() => {
         if (keywordName !== null && keywordName !== '') {
             const currentKeyword = keywordName.toLowerCase();
-
-            let playlists_array = playlists;
             let filtered: PlaylistProps[] = [];
-
-            playlists_array.forEach((playlist) => {
+            playlists.forEach((playlist) => {
                 playlist.keywords.forEach((keyword) => {
                     if(keyword === currentKeyword) {
                         filtered.push(playlist);
@@ -152,82 +111,50 @@ function Library() {
         } else if(keywordName === '') {
             setFilteredPlaylists(playlists);
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keywordName]);
 
     useEffect(() => {
-        const token = functions.getToken();
+        if(updateOperation === true) {
+            setUpdateOperation(false);
 
-        if(token) {
-            if(updateOperation === true) {
-                setUpdateOperation(false);
+            if(confirmationWindow === 'true') {
+                const updatedPlaylist: PlaylistProps = {
+                    id: playlistShowed.id,
+                    title: editedTitle,
+                    genre: editedGender,
+                    security: editedSecurity,
+                    likes: playlistShowed.likes,
+                    keywords: editedKeywords,
+                    videos: editedVideos
+                };
 
-                if(confirmationWindow === 'true') {
-                    const updatedPlaylist = {
-                        id: playlistShowed.id,
-                        title: editedTitle,
-                        genre: editedGender,
-                        security: editedSecurity,
-                        likes: playlistShowed.likes,
-                        keywords: editedKeywords,
-                        videos: editedVideos
-                    }
-
-                    api.put('/playlist', {
-                        updatedPlaylist
-                    }, {
-                        headers: {
-                            "Authorization": `${token}`
-                        }
-                    }).then(() => {
+                updatePlaylistService({ updatedPlaylist })
+                    .then(() => {
                         setShowPopup(false);
                         handleGetPlaylists();
-                    }).catch((error: AxiosError) => {
-                        if(error.response) {
-                            const isTokenValid = (error.response.data as any).auth;
-                            const errorMessage = (error.response.data as any).message;
-
-                            if(isTokenValid === false) {
-                                handleLogout(errorMessage);
-                            }
-                        }
-                        else {
-                            console.error(error);
-                        }
                     })
-                }
-            }
-
-            if(removeOperation === true) {
-                setRemoveOperation(false);
-
-                if(confirmationWindow === 'true') {
-                    const playlist_id = playlistShowed.id;
-
-                    api.delete(`/playlist/${playlist_id}`, {
-                        headers: {
-                            "Authorization": `${token}`
-                        }
-                    }).then(() => {
-                        setShowPopup(false);
-                        handleGetPlaylists();
-                    }).catch((error: AxiosError) => {
-                        if(error.response) {
-                            const isTokenValid = (error.response.data as any).auth;
-                            const errorMessage = (error.response.data as any).message;
-
-                            if(isTokenValid === false) {
-                                handleLogout(errorMessage);
-                            }
-                        }
-                        else {
-                            console.error(error);
-                        }
-                    })
-                }
+                    .catch((error) => {
+                        console.error(error);
+                    });
             }
         }
+
+        if(removeOperation === true) {
+            setRemoveOperation(false);
+
+            if(confirmationWindow === 'true') {
+                deletePlaylistService(playlistShowed.id)
+                    .then(() => {
+                        setShowPopup(false);
+                        handleGetPlaylists();
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        }
+
         setConfirmationWindow('');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [confirmationWindow]);
@@ -240,45 +167,23 @@ function Library() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [playlistsWasUpdated])
 
-    function handleGetPlaylists() {
-        const token = functions.getToken();
+    async function handleGetPlaylists() {
+        const token = localStorage.getItem('x-access-token');
+        if(!token) return;
 
-        if(token) {
-            const userId = functions.getIdByToken(token);
+        const userId = getIdByToken(token);
+        if(!userId) return;
 
-            api.get(`/playlist/${userId}`, {
-                headers: {
-                    "Authorization": `${token}`
-                }
-            }).then((response) => {
-                const playlists = response.data.sort();
-
-                playlists.sort(function (a: PlaylistProps, b: PlaylistProps) {
-                    if (a.title > b.title) {
-                      return 1;
-                    }
-                    if (a.title < b.title) {
-                      return -1;
-                    }
-                    return 0;
-                });
-
-                setPlaylists(playlists);
-                setFilteredPlaylists(playlists);
-                addPlaylistData(playlists);
-            }).catch((error: AxiosError) => {
-                if(error.response) {
-                    const isTokenValid = (error.response.data as any).auth;
-                    const errorMessage = (error.response.data as any).message;
-
-                    if(isTokenValid === false) {
-                        handleLogout(errorMessage);
-                    }
-                }
-                else {
-                    console.error(error);
-                }
-            })
+        try {
+            const playlistsData = await getPlaylists(userId);
+            const sorted = [...playlistsData].sort(
+                (a: PlaylistProps, b: PlaylistProps) => a.title.localeCompare(b.title)
+            );
+            setPlaylists(sorted);
+            setFilteredPlaylists(sorted);
+            addPlaylistData(sorted);
+        } catch {
+            // Auth errors handled by interceptor
         }
     }
 

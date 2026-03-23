@@ -1,5 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import * as AiIcons from "react-icons/ai";
 import * as BsIcons from "react-icons/bs";
@@ -11,24 +16,20 @@ import "../styles/pages/home.css";
 
 import CreatePlaylistBox from "../components/CreatePlaylistBox";
 import Navbar from "../components/Navbar";
-import api from "../services/api";
 
-import Functions from "../functions/Functions";
+import { useDownload, type DownloadEvent } from "../hooks/useDownload";
 import { useFolderDialog } from "../hooks/useFolderDialog";
+import { useYoutube } from "../hooks/useYoutube";
 
 import { UserContext } from "../contexts/userData";
 
-import { AxiosError } from "axios";
-import { useNavigate } from "react-router-dom";
-
 import { sendNotification } from "@tauri-apps/plugin-notification";
-import { open as openUrl } from "@tauri-apps/plugin-shell";
 
-export interface VideosInformations {
-  name: string;
-  url: string;
-  embedUrl: string;
-}
+import { verifyToken } from "../services/authService";
+import { addVideosToPlaylist as addVideosToPlaylistService } from "../services/playlistService";
+import { uploadFile } from "../services/uploadService";
+
+import type { VideosInformations } from "../types/api";
 
 interface ProgressingVideosInformations {
   name: string;
@@ -38,7 +39,7 @@ interface ProgressingVideosInformations {
   progress: number;
 }
 
-interface videosSearchProps {
+interface VideosSearchProps {
   id: string;
   title: string;
   channelTitle: string;
@@ -46,9 +47,8 @@ interface videosSearchProps {
 }
 
 function Home() {
-  const functions = new Functions();
-  const navigate = useNavigate();
   const { pickFolder } = useFolderDialog();
+  const youtube = useYoutube();
 
   const [searchWarning, setSearchWarning] = useState("Teste");
   const [showSearchWarning, setShowSearchWarning] = useState(false);
@@ -57,7 +57,6 @@ function Home() {
 
   const {
     userData,
-    addUserData,
     playlistData,
     addVideoData,
     addVideosData,
@@ -70,10 +69,10 @@ function Home() {
     ProgressingVideosInformations[]
   >([]);
   const progressRef = useRef<ProgressingVideosInformations[]>([]);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const flushScheduledRef = useRef(false);
+  const totalVideosRef = useRef(0);
 
-  const [searchedVideos, setSearchedVideos] = useState<videosSearchProps[]>([]);
+  const [searchedVideos, setSearchedVideos] = useState<VideosSearchProps[]>([]);
 
   const [urlOrName, setUrlOrName] = useState<string>("url");
 
@@ -98,49 +97,10 @@ function Home() {
 
   const [loading, setLoading] = useState(false);
 
-  function handleLogout(message: string) {
-    localStorage.removeItem("user");
-    localStorage.removeItem("x-access-token");
-
-    addUserData({
-      id: "",
-      name: "",
-      email: "",
-      username: "",
-      likedsPlaylists: [""],
-      role: "",
-    });
-
-    alert(message);
-    navigate("/");
-  }
-
   useEffect(() => {
-    const token = functions.getToken();
-
-    if (token) {
-      api
-        .get("/verify", {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then(() => {})
-        .catch((error: AxiosError) => {
-          if (error.response) {
-            const isTokenValid = (error.response.data as any).auth;
-            const errorMessage = (error.response.data as any).message;
-
-            if (isTokenValid === false) {
-              handleLogout(errorMessage);
-            }
-          } else {
-            console.error(error);
-          }
-        });
-    } else {
-      handleLogout("Failed to Authenticate");
-    }
+    verifyToken().catch(() => {
+      // Auth errors handled by interceptor
+    });
 
     const videosStorage = localStorage.getItem("videos");
 
@@ -169,75 +129,47 @@ function Home() {
     progressRef.current = progressingVideosArray;
   }, [progressingVideosArray]);
 
-  useEffect(() => {
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    };
-  }, []);
-
   async function searchByName(name: string) {
     setShowSearchWarning(false);
 
-    api
-      .get(`/search?q=${encodeURIComponent(name)}&limit=6`)
-      .then((response) => {
-        const currentSearchedVideos = response.data.data.map((item: any) => ({
-          id: item.id.videoId,
-          title: item.snippet.title,
-          channelTitle: item.snippet.channelTitle,
-          thumbnail_url: item.snippet.thumbnails.high.url,
-        }));
+    try {
+      const results = await youtube.searchVideos(name, 6);
+      const currentSearchedVideos = results.map((item) => ({
+        id: item.video_id,
+        title: item.title,
+        channelTitle: item.channel,
+        thumbnail_url: item.thumbnail,
+      }));
 
-        setSearchedVideos(currentSearchedVideos);
-        setshowSearchedVideos(true);
-      })
-      .catch((error) => {
-        console.log(error);
-        setShowSearchWarning(true);
-        setSearchWarning("*Erro ao buscar vídeos.");
-      });
+      setSearchedVideos(currentSearchedVideos);
+      setshowSearchedVideos(true);
+    } catch (error) {
+      console.log(error);
+      setShowSearchWarning(true);
+      setSearchWarning("*Erro ao buscar vídeos.");
+    }
   }
 
   async function addVideosByName(names: string[]) {
-    const token = functions.getToken();
     setLoading(true);
 
     for (const task of names) {
       try {
-        const response = await api.get(
-          `/search?q=${encodeURIComponent(task + " lyrics")}&limit=1`,
-        );
-        const searchedVideo: any = response.data.data[0];
+        const results = await youtube.searchVideos(task + " lyrics", 1);
+        const searchedVideo = results[0];
 
         if (searchedVideo) {
-          const newUrl =
-            "https://www.youtube.com/watch?v=" + searchedVideo.id.videoId;
-
           try {
-            await api.post(
-              "/downloads/getInfos",
-              { id: searchedVideo.id.videoId },
-              { headers: { Authorization: `${token}` } },
-            );
-
+            const info = await youtube.getVideoInfo(searchedVideo.video_id);
             setShowSearchWarning(false);
 
-            const video = {
-              name: functions.removeSpecialCaracteres(
-                searchedVideo.snippet.title,
-              ),
-              url: newUrl,
-              embedUrl: functions.getEmbedLink(newUrl),
+            const video: VideosInformations = {
+              name: info.name,
+              url: info.url,
+              embedUrl: info.embedUrl,
             };
-            const progressingVideo = {
-              name: functions.removeSpecialCaracteres(
-                searchedVideo.snippet.title,
-              ),
-              url: newUrl,
-              embedUrl: functions.getEmbedLink(newUrl),
+            const progressingVideo: ProgressingVideosInformations = {
+              ...video,
               status: "waiting",
               progress: 0,
             };
@@ -246,33 +178,15 @@ function Home() {
             setProgressingVideosArray((prev) => [...prev, progressingVideo]);
             addVideoData(video);
           } catch (error) {
-            const axiosError = error as AxiosError;
-            if (axiosError.response) {
-              const status = axiosError.response.status;
-              const data = axiosError.response.data as any;
-
-              if (status === 403) {
-                if (data.message === "Invalid ID") {
-                  setShowSearchWarning(true);
-                  setSearchWarning("*Insira um link válido!");
-                } else if (data.message === "Invalid Video") {
-                  setShowSearchWarning(true);
-                  setSearchWarning("*Video inválido!");
-                }
-              } else if (status === 500) {
-                if (data.auth === false) {
-                  handleLogout(data.message);
-                }
-              }
-            } else {
-              console.error(axiosError);
-            }
+            console.error(error);
+            setShowSearchWarning(true);
+            setSearchWarning("*Video inválido!");
           }
         }
       } catch (error) {
         console.log(error);
         setShowSearchWarning(true);
-        setSearchWarning("*Limite da API estourado!");
+        setSearchWarning("*Erro ao buscar vídeos.");
       }
     }
 
@@ -280,18 +194,12 @@ function Home() {
   }
 
   async function addVideo(url: string) {
-    const token = functions.getToken();
     if (input_link.current) input_link.current.value = "";
-    if (!token) return;
 
     try {
-      const response = await api.post(
-        "/downloads/resolveUrl",
-        { url },
-        { headers: { Authorization: token } },
-      );
+      const response = await youtube.resolveUrl(url);
       setShowSearchWarning(false);
-      response.data.videos.forEach((video: VideosInformations) => {
+      response.videos.forEach((video: VideosInformations) => {
         setVideosArray((prev) => [...prev, video]);
         setProgressingVideosArray((prev) => [
           ...prev,
@@ -300,17 +208,9 @@ function Home() {
         addVideoData(video);
       });
     } catch (error) {
-      const axiosError = error as AxiosError;
-      if (axiosError.response) {
-        const { status, data } = axiosError.response;
-        setShowSearchWarning(true);
-        if (status === 400) setSearchWarning(`*${(data as any).message}`);
-        else if (status === 404) setSearchWarning(`*${(data as any).message}`);
-        else if ((data as any).auth === false)
-          handleLogout((data as any).message);
-      } else {
-        console.error(axiosError);
-      }
+      console.error(error);
+      setShowSearchWarning(true);
+      setSearchWarning("*Link inválido ou vídeo não encontrado!");
     }
   }
 
@@ -320,11 +220,90 @@ function Home() {
     });
   }
 
+  const finishedCountRef = useRef(0);
+
+  const handleDownloadEvent = useCallback((event: DownloadEvent) => {
+    const { index, percent, status, message } = event;
+
+    switch (status) {
+      case "start":
+        if (progressRef.current[index]) {
+          progressRef.current[index].status = "progress";
+          scheduleFlush();
+        }
+        break;
+      case "progress":
+        if (progressRef.current[index]) {
+          progressRef.current[index].progress = Math.floor(percent);
+          scheduleFlush();
+        }
+        break;
+      case "finished":
+        if (progressRef.current[index]) {
+          progressRef.current[index].status = "finished";
+          progressRef.current[index].progress = 100;
+          finishedCountRef.current++;
+
+          if (finishedCountRef.current === totalVideosRef.current) {
+            setProgressingVideosArray([...progressRef.current]);
+            setShowDownloadWarning(true);
+            setDownloadWarning("*Download Total Finalizado!");
+            sendNotification({
+              title: "DownFast",
+              body: "Downloads concluídos!",
+            });
+          } else {
+            scheduleFlush();
+          }
+        }
+        break;
+      case "error":
+        if (progressRef.current[index]) {
+          progressRef.current[index].status = "error";
+          progressRef.current[index].progress = 0;
+          scheduleFlush();
+          console.error(`Download error (index ${index}):`, message);
+        }
+        break;
+    }
+  }, []);
+
+  const { startDownload: invokeDownload, cancelAllDownloads } =
+    useDownload(handleDownloadEvent);
+
   async function downloadOneVideo(video: VideosInformations) {
-    const baseUrl = api.defaults.baseURL || "http://localhost:3333";
-    await openUrl(
-      `${baseUrl}/download?url=${video.url}&name=${video.name}&format=${videoFormat}`,
-    );
+    const path = videoPath;
+    if (path === "") {
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Insira uma pasta de destino!");
+      return;
+    }
+
+    totalVideosRef.current = 1;
+    finishedCountRef.current = 0;
+
+    const progressVideo = {
+      ...video,
+      status: "waiting",
+      progress: 0,
+    };
+    progressRef.current = [progressVideo];
+    setProgressingVideosArray([progressVideo]);
+    setShowProgress(true);
+    setShowDownloadWarning(false);
+
+    try {
+      await invokeDownload({
+        videos: [{ name: video.name, url: video.url }],
+        format: videoFormat,
+        download_path: path,
+      });
+    } catch (error) {
+      console.error(error);
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Erro no Download!");
+      setShowProgress(false);
+    }
 
     const index = downloadedVideosArray.indexOf(video);
     if (index === -1) {
@@ -335,10 +314,7 @@ function Home() {
   async function downloadAllVideos(toDownloadVideos: VideosInformations[]) {
     setShowDownloadWarning(false);
 
-    const thisSessionId = Math.random().toString(36).slice(2, 11);
-
     const path = videoPath;
-    const token = functions.getToken();
 
     if (path === "") {
       setShowDownloadWarning(true);
@@ -346,36 +322,21 @@ function Home() {
       return;
     }
 
-    if (token) {
-      await socketEvents(thisSessionId, toDownloadVideos.length);
+    totalVideosRef.current = toDownloadVideos.length;
+    finishedCountRef.current = 0;
+    setShowProgress(true);
 
-      api
-        .post(
-          `/downloads`,
-          {
-            videos: toDownloadVideos,
-            format: videoFormat,
-            downloadPath: path,
-            sessionId: thisSessionId,
-          },
-          { headers: { Authorization: `${token}` } },
-        )
-        .then(() => {})
-        .catch((error: AxiosError) => {
-          if (error.response) {
-            const isTokenValid = (error.response.data as any).auth;
-            const errorMessage = (error.response.data as any).message;
-
-            if (isTokenValid === false) {
-              handleLogout(errorMessage);
-            }
-          } else {
-            setShowDownloadWarning(true);
-            setDownloadWarning("*Erro no Download!");
-            setShowProgress(false);
-            console.error(error);
-          }
-        });
+    try {
+      await invokeDownload({
+        videos: toDownloadVideos.map((v) => ({ name: v.name, url: v.url })),
+        format: videoFormat,
+        download_path: path,
+      });
+    } catch (error) {
+      console.error(error);
+      setShowDownloadWarning(true);
+      setDownloadWarning("*Erro no Download!");
+      setShowProgress(false);
     }
   }
 
@@ -385,77 +346,6 @@ function Home() {
     requestAnimationFrame(() => {
       flushScheduledRef.current = false;
       setProgressingVideosArray([...progressRef.current]);
-    });
-  }
-
-  function socketEvents(sessionId: string, totalVideos: number): Promise<void> {
-    return new Promise((resolve) => {
-      let contFinished = 0;
-
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-
-      const socketUrl = api.defaults.baseURL || "http://localhost:3333";
-      const socket = io(socketUrl + "/", { transports: ["websocket"] });
-      socketRef.current = socket;
-      socket.emit("connectInit", sessionId, () => {
-        resolve();
-      });
-
-      socket.on("showProgress", () => {
-        setShowProgress(true);
-      });
-
-      socket.on("noPath", () => {
-        setShowDownloadWarning(true);
-        setDownloadWarning("*Diretório não encontrado!");
-        setShowProgress(false);
-        socket.disconnect();
-        socketRef.current = null;
-      });
-
-      socket.on("startDownload", ({ index }) => {
-        progressRef.current[index].status = "progress";
-        scheduleFlush();
-      });
-
-      socket.on("progressDownload", ({ percent, index }) => {
-        progressRef.current[index].progress = Math.floor(percent);
-        scheduleFlush();
-      });
-
-      socket.on("finishedDownload", ({ index }) => {
-        progressRef.current[index].status = "finished";
-        progressRef.current[index].progress = 100;
-        contFinished++;
-
-        if (contFinished === totalVideos) {
-          setProgressingVideosArray([...progressRef.current]);
-          setShowDownloadWarning(true);
-          setDownloadWarning("*Download Total Finalizado!");
-          sendNotification({
-            title: "DownFast",
-            body: "Downloads concluídos!",
-          });
-          socket.disconnect();
-          socketRef.current = null;
-        } else {
-          scheduleFlush();
-        }
-      });
-
-      socket.on("errorInDownload", () => {
-        progressRef.current.forEach((video) => {
-          video.status = "error";
-          video.progress = 0;
-        });
-        setProgressingVideosArray([...progressRef.current]);
-        setShowDownloadWarning(true);
-        setDownloadWarning("*Nomes de arquivos inválidos!");
-        socket.disconnect();
-        socketRef.current = null;
-      });
     });
   }
 
@@ -492,38 +382,22 @@ function Home() {
     removeOneVideoData(index);
   }
 
-  function addVideosToPlaylist(index: number) {
+  async function handleAddVideosToPlaylist(index: number) {
     const playlist_id = playlistData[index].id;
-    const token = functions.getToken();
 
-    if (token) {
-      if (videosArray.length > 0) {
-        api
-          .put(
-            `/playlist/${userData.id}/${playlist_id}`,
-            { updatedVideos: videosArray },
-            { headers: { Authorization: `${token}` } },
-          )
-          .then(() => {
-            alert("Videos adicionados com Sucesso!");
-            unshowUpdatePopup();
-          })
-          .catch((error: AxiosError) => {
-            if (error.response) {
-              const isTokenValid = (error.response.data as any).auth;
-              const errorMessage = (error.response.data as any).message;
-
-              if (isTokenValid === false) {
-                handleLogout(errorMessage);
-              }
-            } else {
-              console.error(error);
-            }
-          });
-      } else {
-        alert("Esta Playlist não possui vídeos!");
+    if (videosArray.length > 0) {
+      try {
+        await addVideosToPlaylistService(userData.id, playlist_id, {
+          updatedVideos: videosArray,
+        });
+        alert("Videos adicionados com Sucesso!");
         unshowUpdatePopup();
+      } catch {
+        // Auth errors handled by interceptor
       }
+    } else {
+      alert("Esta Playlist não possui vídeos!");
+      unshowUpdatePopup();
     }
   }
 
@@ -549,72 +423,46 @@ function Home() {
   }
 
   async function getTextByFile() {
-    const data = new FormData();
-    const token = functions.getToken();
+    if (!file) return;
 
-    if (token) {
-      if (file) {
-        data.append("file", file);
-        setFile(undefined);
+    try {
+      const fileList = await uploadFile(file);
+      setFile(undefined);
 
-        api
-          .post("/upload", data, {
-            headers: {
-              Authorization: `${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((response) => {
-            const fileList: Array<string> = response.data;
+      let fileUrls: string[] = [];
+      let fileNames: string[] = [];
+      let fileNothing: string[] = [];
 
-            let fileUrls: string[] = [];
-            let fileNames: string[] = [];
-            let fileNothing: string[] = [];
+      fileList.forEach((fileLine: string) => {
+        if (
+          fileLine.includes("https://www.youtube.com/watch?v=") ||
+          fileLine.includes("https://music.youtube.com/watch?v=") ||
+          fileLine.includes("https://youtu.be/")
+        ) {
+          fileUrls.push(fileLine);
+        } else if (fileLine !== "") {
+          fileNames.push(fileLine);
+        } else {
+          fileNothing.push(fileLine);
+        }
+      });
 
-            fileList.forEach((file: string) => {
-              if (
-                file.includes("https://www.youtube.com/watch?v=") ||
-                file.includes("https://music.youtube.com/watch?v=") ||
-                file.includes("https://youtu.be/")
-              ) {
-                fileUrls.push(file);
-              } else if (file !== "") {
-                fileNames.push(file);
-              } else {
-                fileNothing.push(file);
-              }
-            });
+      if (fileNothing.length > 1) {
+        setShowSearchWarning(true);
+        setSearchWarning("*Arquivo no formato Inválido!");
+      } else {
+        setShowSearchWarning(false);
 
-            if (fileNothing.length > 1) {
-              setShowSearchWarning(true);
-              setSearchWarning("*Arquivo no formato Inválido!");
-            } else {
-              setShowSearchWarning(false);
-
-              if (fileUrls.length > 0) addVideos(fileUrls);
-              if (fileNames.length > 0) addVideosByName(fileNames);
-            }
-          })
-          .catch((error: AxiosError) => {
-            if (error.response) {
-              if ((error.response.data as any).auth) {
-                const isTokenValid = (error.response.data as any).auth;
-                const errorMessage = (error.response.data as any).message;
-
-                if (isTokenValid === false) {
-                  handleLogout(errorMessage);
-                }
-              }
-            } else {
-              setShowSearchWarning(true);
-              setSearchWarning("*Arquivo modificado recentemente!");
-            }
-          });
+        if (fileUrls.length > 0) addVideos(fileUrls);
+        if (fileNames.length > 0) addVideosByName(fileNames);
       }
+    } catch {
+      setShowSearchWarning(true);
+      setSearchWarning("*Arquivo modificado recentemente!");
     }
   }
 
-  function addSearchedVideo(video: videosSearchProps) {
+  function addSearchedVideo(video: VideosSearchProps) {
     if (video) {
       const url = "https://www.youtube.com/watch?v=" + video.id;
       addVideo(url);
@@ -728,7 +576,7 @@ function Home() {
                       <span title={playlist.genre}>{playlist.genre}</span>
                     </div>
                     <div className="add-to-playlist-button">
-                      <button onClick={() => addVideosToPlaylist(index)}>
+                      <button onClick={() => handleAddVideosToPlaylist(index)}>
                         +
                       </button>
                     </div>

@@ -4,26 +4,14 @@ import { useNavigate } from "react-router-dom";
 import '../styles/pages/cadastro.css';
 
 import Input from '../components/Input';
-import api from "../services/api";
 
-import Functions from '../functions/Functions';
+import { setToken, getIdByToken } from '../functions/Functions';
 import { UserContext } from "../contexts/userData";
 import { AxiosError } from "axios";
 
-interface PlaylistVideosProps {
-    name: string;
-    url: string;
-}
-
-interface PlaylistProps {
-    id: string;
-    title: string;
-    genre: string;
-    likes: number;
-    security: string;
-    keywords: Array<string>;
-    videos: Array<PlaylistVideosProps>;
-}
+import { login, register, sendMail } from "../services/authService";
+import { getPlaylists } from "../services/playlistService";
+import type { PlaylistProps, UserErrorResponse } from "../types/api";
 
 const Cadastro = () => {
     const {addUserData, addPlaylistData} = useContext(UserContext);
@@ -56,25 +44,6 @@ const Cadastro = () => {
 
     const [recoverEmail, setRecoverEmail] = useState('');
 
-    const functions = new Functions();
-
-    function handleLogout(message: string){
-        localStorage.removeItem('user');
-        localStorage.removeItem('x-access-token');
-
-        addUserData({
-          id: '',
-          name: '',
-          email: '',
-          username: '',
-          likedsPlaylists: [''],
-          role: ''
-        })
-
-        alert(message);
-        navigate('/');
-      }
-
     function changeScreen() {
         if(form_cadastro.current && form_login.current) {
             form_cadastro.current.classList.toggle('hide-screen');
@@ -87,14 +56,13 @@ const Cadastro = () => {
         return;
     }
 
-    function handleCreateUser(e: FormEvent) {
+    async function handleCreateUser(e: FormEvent) {
         e.preventDefault();
         setLoading(true);
 
         if(!name || !emailCadastro || !username || !senhaCadastro1 || !senhaCadastro2) {
             setShowCadastroWarning(true);
             setCadastroWarning('*Campo não inserido!');
-
             setLoading(false);
             return;
         }
@@ -102,7 +70,6 @@ const Cadastro = () => {
         if(senhaCadastro1 !== senhaCadastro2) {
             setShowCadastroWarning(true);
             setCadastroWarning('*Senhas incompatíveis!');
-
             setLoading(false);
             return;
         }
@@ -110,7 +77,6 @@ const Cadastro = () => {
         if(senhaCadastro1.length < 8) {
             setShowCadastroWarning(true);
             setCadastroWarning('*Senha deve ter no mínimo 8 caracteres!');
-
             setLoading(false);
             return;
         }
@@ -118,40 +84,37 @@ const Cadastro = () => {
         if(terms === false) {
             setShowCadastroWarning(true);
             setCadastroWarning('*Você deve aceitar os Termos de Serviços!');
-
             setLoading(false);
             return;
         }
 
-        api.post('/users', {
-            name,
-            email: emailCadastro,
-            username,
-            password: senhaCadastro1,
-            role: "ROLE_USER"
-        }).then(() => {
+        try {
+            await register({
+                name,
+                email: emailCadastro,
+                username,
+                password: senhaCadastro1,
+                role: "ROLE_USER"
+            });
             setLoading(false);
             changeScreen();
             alert('Realizado com sucesso');
-
             setShowCadastroWarning(false);
-
-            return;
-        }).catch((error: AxiosError) => {
+        } catch (error) {
             setLoading(false);
-            if(error.response) {
-                if((error.response.data as any).error === 'User already exists') {
+            const axiosError = error as AxiosError<UserErrorResponse>;
+            if(axiosError.response) {
+                if(axiosError.response.data.error === 'User already exists') {
                     setShowCadastroWarning(true);
                     setCadastroWarning('*Email já cadastrado!');
                 }
-            }
-            else {
+            } else {
                 console.log(error);
             }
-        });
+        }
     }
 
-    function handleLogin(e: FormEvent) {
+    async function handleLogin(e: FormEvent) {
         e.preventDefault();
         setLoading(true);
 
@@ -159,96 +122,74 @@ const Cadastro = () => {
             setShowLoginWarning(true);
             setLoginWarning('*Campo não inserido!');
             setLoading(false);
-
             return;
         }
 
-        api.post('/session', {
-            email: emailLogin,
-            password: senhaLogin
-        }).then((response) => {
-            const token = response.data.token;
-            functions.setToken(token);
+        try {
+            const loginData = await login({
+                email: emailLogin,
+                password: senhaLogin
+            });
 
-            const user = response.data.user;
+            const token = loginData.token;
+            setToken(token);
+
+            const user = loginData.user;
             localStorage.setItem('user', JSON.stringify(user));
             addUserData(user);
 
-            const userId = functions.getIdByToken(token);
+            const userId = getIdByToken(token);
 
-            api.get(`/playlist/${userId}`, {
-                headers: {
-                    Authorization: `${token}`
+            if (userId) {
+                try {
+                    const playlistsData = await getPlaylists(userId);
+                    const sortedPlaylists = [...playlistsData].sort(
+                        (a: PlaylistProps, b: PlaylistProps) => a.title.localeCompare(b.title)
+                    );
+                    addPlaylistData(sortedPlaylists);
+                } catch {
+                    // Auth errors handled by interceptor
                 }
-            }).then((response) => {
-                const playlists = response.data.sort();
+            }
 
-                playlists.sort(function (a: PlaylistProps, b: PlaylistProps) {
-                    if (a.title > b.title) {
-                      return 1;
-                    }
-                    if (a.title < b.title) {
-                      return -1;
-                    }
-                    return 0;
-                });
-
-                addPlaylistData(playlists);
-                setLoading(false);
-                navigate('/home');
-            }).catch((error: AxiosError) => {
-                setLoading(false);
-                if(error.response) {
-                    const isTokenValid = (error.response.data as any).auth;
-                    const errorMessage = (error.response.data as any).message;
-
-                    if(isTokenValid === false) {
-                        handleLogout(errorMessage);
-                    }
-                }
-                else {
-                    console.log(error);
-                }
-            })
-        }).catch((error: AxiosError) => {
             setLoading(false);
-            if(error.response) {
-                if((error.response.data as any).error === 'User not found!') {
+            navigate('/home');
+        } catch (error) {
+            setLoading(false);
+            const axiosError = error as AxiosError<UserErrorResponse>;
+            if(axiosError.response) {
+                if(axiosError.response.data.error === 'User not found!') {
                     setShowLoginWarning(true);
                     setLoginWarning('*Email Incorreto!');
-                }
-                else if((error.response.data as any).error === 'Incorrect User or Password!') {
+                } else if(axiosError.response.data.error === 'Incorrect User or Password!') {
                     setShowLoginWarning(true);
                     setLoginWarning('*Email ou Senha Incorreta!');
                 }
-            }
-            else {
+            } else {
                 console.log(error);
             }
-        })
+        }
     }
 
-    function sendMail() {
-        api.post("/sendMail", {
-            email: recoverEmail
-        }).then(() => {
+    async function handleSendMail() {
+        try {
+            await sendMail({ email: recoverEmail });
             setShowPasswordWarning(true);
             setPasswordWarning('*Email enviado!');
-        }).catch((error: AxiosError) => {
-            if(error.response) {
-                if((error.response.data as any).error === 'User not found!') {
+        } catch (error) {
+            const axiosError = error as AxiosError<UserErrorResponse>;
+            if(axiosError.response) {
+                if(axiosError.response.data.error === 'User not found!') {
                     setShowPasswordWarning(true);
                     setPasswordWarning('*Email Não Encontrado!');
-                }
-                else {
+                } else {
                     setShowPasswordWarning(true);
                     setPasswordWarning('*Falha ao enviar Email!');
                 }
-            }
-            else {
+            } else {
                 console.log(error);
             }
-        });
+        }
     }
 
     return (
@@ -265,7 +206,7 @@ const Cadastro = () => {
                                 <label htmlFor="email-recover">Insira seu Email</label>
                                 <input onChange={(e) => setRecoverEmail(e.target.value)} type="email" name="" id="email-recover" placeholder="Insira seu E-mail" />
                             </div>
-                            <button onClick={sendMail} >Enviar</button>
+                            <button onClick={handleSendMail} >Enviar</button>
 
                             <span
                                 style={ showPasswordWarning ? {visibility: 'visible'} : {visibility: 'hidden'} }

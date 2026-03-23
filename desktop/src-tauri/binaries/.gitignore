@@ -1,0 +1,6 @@
+# Sidecar binaries are platform-specific.
+# In dev, create symlinks to system binaries:
+#   ln -sf $(which yt-dlp) yt-dlp-x86_64-unknown-linux-gnu
+#   ln -sf $(which ffmpeg) ffmpeg-x86_64-unknown-linux-gnu
+*
+!.gitignore

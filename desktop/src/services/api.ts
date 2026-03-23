@@ -1,10 +1,29 @@
 import axios from 'axios'
+import { emitAuthLogout } from './authEvents'
 
 const DEFAULT_URL = 'http://localhost:3333'
 
 const api = axios.create({
   baseURL: DEFAULT_URL,
 })
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('x-access-token');
+  if (token) {
+    config.headers.Authorization = token;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.data?.auth === false) {
+      emitAuthLogout(error.response.data.message || 'Failed to authenticate');
+    }
+    return Promise.reject(error);
+  },
+);
 
 async function initApiUrl() {
   try {

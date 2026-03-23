@@ -5,21 +5,19 @@ import '../styles/pages/settings.css';
 import Navbar from '../components/Navbar';
 import { UserContext } from '../contexts/userData';
 
-import {AxiosError} from 'axios';
+import { AxiosError } from 'axios';
 
 import * as AiIcons from 'react-icons/ai';
 import ConfirmationWindow from '../components/ConfirmationWindow';
 
-import Functions from '../functions/Functions';
-import api, { updateApiBaseUrl, getServerUrl } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { updateApiBaseUrl, getServerUrl } from '../services/api';
 
-const functions = new Functions();
+import { updateUser, changePassword, deleteUser } from '../services/userService';
+import type { ChangePasswordErrorResponse } from '../types/api';
 
 
 function Settings() {
     const {userData, addUserData} = useContext(UserContext);
-    const navigate = useNavigate();
 
     const [showEdit, setShowEdit] = useState<boolean>(false);
     const [wasUpdated, setWasUpdated] = useState<boolean>(false);
@@ -58,127 +56,73 @@ function Settings() {
         });
     }, []);
 
-    function handleLogout(message: string){
-        localStorage.removeItem('user');
-        localStorage.removeItem('x-access-token');
-
-        addUserData({
-          id: '',
-          name: '',
-          email: '',
-          username: '',
-          likedsPlaylists: [''],
-          role: ''
-        })
-
-        alert(message);
-        navigate('/');
-      }
-
     useEffect(() => {
-        const token = functions.getToken();
+        if(editOperation === true) {
+            setEditOperation(false);
 
-        if(token) {
-            if(editOperation === true) {
-                setEditOperation(false);
+            if(confirmationWindow === 'true') {
+                const updatedUserData = {
+                    id: userData.id,
+                    name: editedName,
+                    username: editedUsername,
+                    email: editedEmail,
+                    likedsPlaylists: userData.likedsPlaylists,
+                    role: userData.role
+                };
 
-                if(confirmationWindow === 'true') {
-                    const updatedUser = {
-                        id: userData.id,
-                        name: editedName,
-                        username: editedUsername,
-                        email: editedEmail,
-                        likedsPlaylists: userData.likedsPlaylists,
-                        role: userData.role
-                    }
-
-                    api.put("/users", {
-                        updatedUser
-                    }, {
-                        headers: {
-                            "Authorization": `${token}`
-                        }
-                    }).then(() => {
+                updateUser({ updatedUser: updatedUserData })
+                    .then(() => {
                         changeScreen();
-                        addUserData(updatedUser);
-                    }).catch((error: AxiosError) => {
-                        if(error.response) {
-                            const isTokenValid = (error.response.data as any).auth;
-                            const errorMessage = (error.response.data as any).message;
-
-                            if(isTokenValid === false) {
-                                handleLogout(errorMessage);
-                            }
-                        }
-                        else {
-                            console.error(error);
-                        }
+                        addUserData(updatedUserData);
                     })
-                }
+                    .catch((error) => {
+                        console.error(error);
+                    });
             }
+        }
 
-            if(removeOperation === true) {
-                setRemoveOperation(false);
+        if(removeOperation === true) {
+            setRemoveOperation(false);
 
-                if(confirmationWindow === 'true') {
-                    api.delete(`/users/${userData.id}`, {
-                        headers: {
-                            "Authorization": `${token}`
-                        }
+            if(confirmationWindow === 'true') {
+                deleteUser(userData.id)
+                    .then(() => {
+                        // Interceptor will handle the logout redirect
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('x-access-token');
+                        alert('Failed to authenticate token!');
+                        window.location.href = '/';
                     })
-                        .then(() => {
-                            handleLogout('Failed to authenticate token!');
-                        }).catch((error: AxiosError) => {
-                            if(error.response) {
-                                const isTokenValid = (error.response.data as any).auth;
-                                const errorMessage = (error.response.data as any).message;
-
-                                if(isTokenValid === false) {
-                                    handleLogout(errorMessage);
-                                }
-                            }
-                            else {
-                                console.error(error);
-                            }
-                        })
-                }
+                    .catch((error) => {
+                        console.error(error);
+                    });
             }
+        }
 
-            if(editPasswordOperation === true) {
-                setEditPasswordOperation(false);
+        if(editPasswordOperation === true) {
+            setEditPasswordOperation(false);
 
-                if(confirmationWindow === 'true') {
-                    api.put(`/users/password/${userData.id}`, {
-                        actualPassword: actualPassword,
-                        newPassword: newPassword1
-                    }, {
-                        headers: {
-                            "Authorization": `${token}`
-                        }
-                    }).then(() => {
+            if(confirmationWindow === 'true') {
+                changePassword(userData.id, {
+                    actualPassword: actualPassword,
+                    newPassword: newPassword1
+                })
+                    .then(() => {
                         alert('Senha Alterada com Sucesso!');
                         setShowPasswordWarning(false);
                         closePasswordPopup();
-                    }).catch((error: AxiosError) => {
-                        if(error.response) {
-                            if((error.response.data as any).auth) {
-                                const isTokenValid = (error.response.data as any).auth;
-                                const errorMessage = (error.response.data as any).message;
-
-                                if(isTokenValid === false) {
-                                    handleLogout(errorMessage);
-                                }
-                            }
-                            else if((error.response.data as any).error === 'Incorrect User or Password!') {
+                    })
+                    .catch((error) => {
+                        const axiosError = error as AxiosError<ChangePasswordErrorResponse>;
+                        if(axiosError.response) {
+                            if(axiosError.response.data.error === 'Incorrect User or Password!') {
                                 setShowPasswordWarning(true);
                                 setPasswordWarning('*Senha não está correta!');
                             }
-                        }
-                        else {
+                        } else {
                             console.error(error);
                         }
-                    })
-                }
+                    });
             }
         }
 
